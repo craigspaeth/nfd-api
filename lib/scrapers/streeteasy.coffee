@@ -8,9 +8,6 @@ dal = require '../../dal'
 _ = require 'underscore'
 Browser = require 'zombie'
 
-dal.connect ->   
-  scrapePage 1, console.log
-
 # Scrapes a page of listings and saves them to mongo
 # 
 # @param {Number} page
@@ -19,6 +16,8 @@ dal.connect ->
 scrapePage = (page, callback) ->
   listings = []
   fetchListingUrls page, (err, urls) ->
+    return callback('fail') if err
+    console.log "Scraping #{urls.length} listings from page #{page}..."
     cb = _.after urls.length, ->
       console.log "Saved page #{page}!"
       dal.listings.upsert listings, callback
@@ -39,7 +38,12 @@ fetchListingUrls = (page, callback) ->
   Browser.visit url, { silent:true }, (err, browser) ->
     $ = jQuery.create(browser.window)
     $listings = $('.unsponsored .item.listing .body h3 a')
-    callback null, $listings.map((i, el) -> "http://streeteasy.com" + $(el).attr('href')).toArray()
+    if $listings?.length is 0
+      console.log "ERROR: Found no listings on page #{page}"
+      callback {}
+    else
+      urls = $listings.map((i, el) -> "http://streeteasy.com" + $(el).attr('href')).toArray()
+      callback null, urls
 
 # Scrapes an individual listing and converts it to our data model.
 # 
@@ -76,3 +80,20 @@ parseDirty = (data, callback) =>
     url: data.url
     pictures: data.pictures
   }
+
+# Scrape first argument number of pages if the module has been run directly
+return unless module is require.main
+dal.connect ->
+  start = process.argv[2]
+  end = process.argv[3]
+  total = end - start + 1
+  console.log "Scraping #{total} pages..."
+  callback = _.after total, ->
+    console.log "Finished scraping!"
+    process.exit()
+  i = 0
+  scrape = ->
+    i++
+    scrapePage(i, scrape)
+    callback()
+  scrape()
