@@ -7,6 +7,13 @@
   },
   "dependencies": {
     "express": "*",
-		"coffee-script": "*"
-  }
+		"coffee-script": "*",
+		"underscore": "*",
+		"mongodb": "*"
+  },
+	"devDependencies": {
+		"jquery": "*",
+		"zombie": "*",
+		"googlemaps": "*"
+	}
 }
