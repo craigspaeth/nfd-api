@@ -50,7 +50,7 @@ PAGE_SIZE = 50
              .toArray callback
 
 @toJSON = (docs) ->
-  if _.isArray(docs) then (schema(doc) for doc in docs) else schema(doc)
+  if _.isArray(docs) then (schema(doc) for doc in docs) else schema(docs)
 
 schema = (doc) ->
   _.extend doc,
