@@ -4,7 +4,7 @@
 #
 
 jQuery = require 'jquery'
-dal = require '../../dal'
+@dal = require '../../dal'
 _ = require 'underscore'
 Browser = require 'zombie'
 
@@ -13,14 +13,14 @@ Browser = require 'zombie'
 # @param {Number} page
 # @param {Function} callback Callsback with (err)
 
-scrapePage = (page, callback) ->
+@scrapePage = (page, callback) =>
   listings = []
-  fetchListingUrls page, (err, urls) ->
+  fetchListingUrls page, (err, urls) =>
     return callback('fail') if err
     console.log "Scraping #{urls.length} listings from page #{page}..."
-    cb = _.after urls.length, ->
+    cb = _.after urls.length, =>
       console.log "Saved page #{page}!"
-      dal.listings.upsert listings, callback
+      @dal.listings.upsert listings, callback
     for url in urls
       fetchListing url, (err, listing) ->
         listings.push(listing)
@@ -86,14 +86,14 @@ return unless module is require.main
 dal.connect ->
   start = process.argv[2]
   end = process.argv[3]
-  total = end - start + 1
+  total = end - start
   console.log "Scraping #{total} pages..."
   callback = _.after total, ->
     console.log "Finished scraping!"
     process.exit()
-  i = 0
+  i = start
   scrape = ->
-    i++
     scrapePage(i, scrape)
     callback()
+    i++
   scrape()

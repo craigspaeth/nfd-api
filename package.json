@@ -9,11 +9,15 @@
     "express": "*",
 		"coffee-script": "*",
 		"underscore": "*",
-		"mongodb": "*"
+		"mongodb": "*",
+		"validator": "*"
   },
 	"devDependencies": {
 		"jquery": "*",
 		"zombie": "*",
-		"googlemaps": "*"
+		"googlemaps": "*",
+		"mocha": "*",
+		"should": "*",
+		"sinon": "*"
 	}
 }
