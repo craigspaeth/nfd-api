@@ -1,35 +1,33 @@
 listings = require '../../dal/listings'
-collectionStub = require '../helpers/collection_stub.coffee'
 sinon = require 'sinon'
 
 describe 'listings', ->
   
-  before ->
-    listings.collection = collectionStub
-    
+  beforeEach ->
+    listings.collection =
+      update: sinon.stub()
+      distinct: sinon.stub()
+  
   describe '#upsert', ->
-    
-    beforeEach ->
-      @spy = sinon.spy listings.collection, 'update'
-      
-    afterEach ->
-      @spy.restore?()
     
     it 'upserts restricting to urls', ->
       listings.upsert [{ url: 'foo', foo: 'foo' }, {  url: 'bar', bar: 'foo' }]
-      @spy.args[0][0].url.should.equal 'foo'
-      @spy.args[1][0].url.should.equal 'bar'
+      listings.collection.update.args[0][0].url.should.equal 'foo'
+      listings.collection.update.args[1][0].url.should.equal 'bar'
       
     it 'upserts each document', ->
       listings.upsert [{ url: 'foo', foo: 'foo' }, {  url: 'bar', bar: 'foo' }]
-      @spy.calledTwice.should.be.ok
+      listings.collection.update.calledTwice.should.be.ok
     
     it 'updates the passed info', ->
       listings.upsert [{ url: 'foo', foo: 'foo' }, {  url: 'bar', bar: 'bar' }]
-      @spy.args[0][1].foo.should.equal 'foo'
-      @spy.args[1][1].bar.should.equal 'bar'
+      listings.collection.update.args[0][1].foo.should.equal 'foo'
+      listings.collection.update.args[1][1].bar.should.equal 'bar'
   
   describe '#geocode', ->
+    
+    beforeEach ->
+      listings.collection.update.callsArgWith 3, null
     
     it 'fetches the geocode data from google maps and injects it into the listing', (done) ->
       listings.gm = { geocode: sinon.stub() }
@@ -66,4 +64,19 @@ describe 'listings', ->
       listings.gm.geocode.callsArgWith 1, { status: 'ZERO RESULTS' }
       listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
         (err?).should.be.ok
+        done()
+        
+  describe '#findNeighborhoods', ->
+    
+    it 'distincts the neighborhoods and returns the results', (done) ->
+      listings.collection.distinct.callsArgWith 1, null, ['foo', 'bar']
+      listings.findNeighborhoods (err, results) ->
+        results[0].should.equal 'foo'
+        results[1].should.equal 'bar'
+        done()
+      
+    it 'ignores null neighborhoods', (done) ->
+      listings.collection.distinct.callsArgWith 1, null, ['foo', 'bar', null]
+      listings.findNeighborhoods (err, results) ->
+        results.length.should.equal 2
         done()
