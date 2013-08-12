@@ -71,12 +71,18 @@ describe 'listings', ->
     it 'distincts the neighborhoods and returns the results', (done) ->
       listings.collection.distinct.callsArgWith 1, null, ['foo', 'bar']
       listings.findNeighborhoods (err, results) ->
-        results[0].should.equal 'foo'
-        results[1].should.equal 'bar'
+        results[0].should.equal 'bar'
+        results[1].should.equal 'foo'
         done()
       
     it 'ignores null neighborhoods', (done) ->
       listings.collection.distinct.callsArgWith 1, null, ['foo', 'bar', null]
       listings.findNeighborhoods (err, results) ->
         results.length.should.equal 2
+        done()
+      
+    it 'sorts alphabetically', (done) ->
+      listings.collection.distinct.callsArgWith 1, null, ['a', 'd', 'c', 'b']
+      listings.findNeighborhoods (err, results) ->
+        results.join('').should.equal 'abcd'
         done()

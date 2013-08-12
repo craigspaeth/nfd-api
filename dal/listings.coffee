@@ -71,7 +71,7 @@ PAGE_SIZE = 50
 @findNeighborhoods = (callback) =>
   @collection.distinct 'location.neighborhood', (err, results) ->
     return callback err if err
-    callback null, _.without results, null
+    callback null, _.without(results, null).sort()
     
 @toJSON = (listings) ->
   if _.isArray(listings) then (@schema(listing) for listing in listings) else @schema(listings)
