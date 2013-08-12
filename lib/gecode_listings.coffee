@@ -6,5 +6,6 @@
 dal = require '../dal'
 
 dal.connect ->
- dal.listings.findOne '5208281c6febd8053931785d', (err, listing) ->
-   dal.listings.geocode listing, console.log
+ dal.listings.find { page: 1 }, (err, listings) ->
+   for listing in listings
+     dal.listings.geocode listing, console.log

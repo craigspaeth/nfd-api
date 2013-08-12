@@ -52,9 +52,10 @@ PAGE_SIZE = 50
              .toArray callback
 
 @geocode = (listing, callback) =>
+  return callback("Listing must have a name.") unless listing.location.name
   @gm.geocode listing.location.name, (err, res) =>
     return callback(err) if err
-    return callback(null, listing) if res.status is 'ZERO_RESULTS'
+    return callback("No results.") if res.status is 'ZERO_RESULTS'
     firstResult = res.results[0]
     neighborhood = (comp.short_name for comp in firstResult.address_components \
                                     when 'neighborhood' in comp.types)[0]

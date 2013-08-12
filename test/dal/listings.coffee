@@ -55,3 +55,15 @@ describe 'listings', ->
                 lat: 40.802391
                 lng: -73.934573
           ]
+    
+    it 'errs on listings without location names', (done) ->
+      listings.geocode { location: {} }, (err) ->
+        (err?).should.be.ok
+        done()
+      
+    it 'errs if there are no results', (done) ->
+      listings.gm = { geocode: sinon.stub() }
+      listings.gm.geocode.callsArgWith 1, { status: 'ZERO RESULTS' }
+      listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
+        (err?).should.be.ok
+        done()
