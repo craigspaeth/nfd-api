@@ -6,6 +6,9 @@ s:
 scrape:
 	$(BIN)/coffee lib/scrapers/streeteasy.coffee $(start) $(end)
 
+geocode:
+	$(BIN)/coffee lib/gecode_listings.coffee $(page)
+
 test:
 	$(BIN)/mocha $(shell find test -name '*.coffee' -not -path 'test/helpers/*' -not -path 'test/scrapers/*')
 

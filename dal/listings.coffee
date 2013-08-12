@@ -55,8 +55,8 @@ PAGE_SIZE = 50
   return callback("Listing must have a name.") unless listing.location.name
   @gm.geocode listing.location.name, (err, res) =>
     return callback(err) if err
-    return callback("No results.") if res.status is 'ZERO_RESULTS'
-    firstResult = res.results[0]
+    firstResult = res?.results?[0]
+    return callback("No results.") unless firstResult
     neighborhood = (comp.short_name for comp in firstResult.address_components \
                                     when 'neighborhood' in comp.types)[0]
     listing.location = _.extend listing.location,
