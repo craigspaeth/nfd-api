@@ -12,8 +12,9 @@
 #   location: {
 #     name: String,
 #     formatted_address: String,
-#     lon: Number,
-#     lng: Number
+#     lat: Number,
+#     lng: Number,
+#     neighborhood: String
 #   }
 #   url: String,
 #   contact_info: {
@@ -27,11 +28,12 @@
 #   listed_date: Date
 
 _ = require 'underscore'
-
 { ObjectID } = mongodb = require 'mongodb'
+@gm = require 'googlemaps'
 PAGE_SIZE = 50
 
 @upsert = (listings, callback = ->) =>
+  listings = [listings] unless _.isArray(listings)
   callback = _.after listings.length, callback
   for listing in listings
     @collection.update { url: listing.url }, listing, { upsert: true }, callback
@@ -49,8 +51,24 @@ PAGE_SIZE = 50
              .limit(PAGE_SIZE)
              .toArray callback
 
-@toJSON = (docs) ->
-  if _.isArray(docs) then (@schema(doc) for doc in docs) else @schema(docs)
+@geocode = (listing, callback) =>
+  @gm.geocode listing.location.name, (err, res) =>
+    return callback(err) if err
+    return callback(null, listing) if res.status is 'ZERO_RESULTS'
+    firstResult = res.results[0]
+    neighborhood = (comp.short_name for comp in firstResult.address_components \
+                                    when 'neighborhood' in comp.types)[0]
+    listing.location = _.extend listing.location,
+      formatted_address: firstResult.formatted_address
+      lng: firstResult.geometry.location.lng
+      lat: firstResult.geometry.location.lat
+      neighborhood: neighborhood
+    @upsert [listing], (err, listings) =>
+      return callback(err) if err
+      callback null, listing
+
+@toJSON = (listings) ->
+  if _.isArray(listings) then (@schema(listing) for listing in listings) else @schema(listings)
 
 @schema = (doc) ->
   _.extend doc,

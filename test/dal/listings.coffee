@@ -29,3 +29,29 @@ describe 'listings', ->
       @spy.args[0][1].foo.should.equal 'foo'
       @spy.args[1][1].bar.should.equal 'bar'
   
+  describe '#geocode', ->
+    
+    it 'fetches the geocode data from google maps and injects it into the listing', (done) ->
+      listings.gm = { geocode: sinon.stub() }
+      listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
+        listing.location.formatted_address.should.equal(
+          '245 East 124th Street, New York, NY 10035, USA'
+        )
+        listing.location.lng.should.equal -73.934573
+        listing.location.lat.should.equal 40.802391
+        listing.location.neighborhood.should.equal 'East Harlem'
+        done()
+      listings.gm.geocode.args[0][0].should.equal 'foobar'
+      listings.gm.geocode.args[0][1] null,
+        results: [
+            address_components: [
+              long_name: "East Harlem"
+              short_name: "East Harlem"
+              types: ["neighborhood", "political"]
+            ]
+            formatted_address: "245 East 124th Street, New York, NY 10035, USA"
+            geometry:
+              location:
+                lat: 40.802391
+                lng: -73.934573
+          ]

@@ -83,7 +83,7 @@ parseDirty = (data, callback) =>
 
 # Scrape first argument number of pages if the module has been run directly
 return unless module is require.main
-dal.connect ->
+@dal.connect =>
   start = process.argv[2]
   end = process.argv[3]
   total = end - start
@@ -92,8 +92,8 @@ dal.connect ->
     console.log "Finished scraping!"
     process.exit()
   i = start
-  scrape = ->
-    scrapePage(i, scrape)
+  scrape = =>
+    @scrapePage(i, scrape)
     callback()
     i++
   scrape()
