@@ -10,7 +10,8 @@
 		"coffee-script": "*",
 		"underscore": "*",
 		"mongodb": "*",
-		"validator": "*"
+		"validator": "*",
+		"cors": "*"
   },
 	"devDependencies": {
 		"jquery": "*",

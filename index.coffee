@@ -1,9 +1,13 @@
 dal = require './dal'
 fs = require 'fs'
 express = require 'express'
+cors = require 'cors'
 { PORT } = require './config'
- 
+
 app = module.exports = express()
+
+# Add cors
+app.use cors()
 
 # Attach routes to app
 routers = for file in fs.readdirSync('./routes') when file.match /\.coffee$/
