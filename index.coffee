@@ -13,10 +13,10 @@ app.use cors()
 routers = for file in fs.readdirSync('./routes') when file.match /\.coffee$/
            require(__dirname + '/routes/' + file)
 for router in routers
-  for route, fn of router
+  for route, hash of router
     method = route.split(' ')[0].toLowerCase()
     routeName = route.split(' ').slice(1).join(' ')
-    app[method] routeName, fn
+    app[method] routeName, hash.cb
 
 # Connect dal to mongo and start server
 dal.connect ->

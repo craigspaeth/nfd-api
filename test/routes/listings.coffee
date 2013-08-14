@@ -15,7 +15,7 @@ describe 'listings routes', ->
       dal.listings.find.restore()
     
     it 'returns listings', ->
-      routes['GET /listings'] { query: { foo: 'bar' } }, { send: sendStub = sinon.stub() }
+      routes['GET /listings'].cb { query: { foo: 'bar' } }, { send: sendStub = sinon.stub() }
       dal.listings.find.args[0][0].foo.should.equal 'bar'
       listings = sendStub.args[0][0]
       listings[0].name.should.equal 'foo'
@@ -30,7 +30,7 @@ describe 'listings routes', ->
       dal.listings.findOne.restore()
     
     it 'returns one listing', ->
-      routes['GET /listings/:id'] { params: { id: 'bar' } }, { send: sendStub = sinon.stub() }
+      routes['GET /listings/:id'].cb { params: { id: 'bar' } }, { send: sendStub = sinon.stub() }
       dal.listings.findOne.args[0][0].should.equal 'bar'
       listing = sendStub.args[0][0]
       listing.name.should.equal 'foo'
