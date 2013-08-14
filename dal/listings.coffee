@@ -44,7 +44,7 @@ PAGE_SIZE = 50
 @find = (params, callback) =>
   options = {}
   options.beds = { $gte: parseInt params.bed_min } if params.bed_min?
-  options.beds = { $gte: parseInt params.bed_min } if params.bath_min?
+  options.baths = { $gte: parseInt params.bath_min } if params.bath_min?
   options.rent = { $lte: parseInt params.rent_max } if params.rent_max?
   @collection.find(options)
              .skip(PAGE_SIZE * options.page or 0)

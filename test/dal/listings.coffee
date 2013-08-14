@@ -1,13 +1,27 @@
 listings = require '../../dal/listings'
 sinon = require 'sinon'
+collectionStub = require '../helpers/collection_stub'
+_ = require 'underscore'
 
 describe 'listings', ->
   
   beforeEach ->
-    listings.collection =
-      update: sinon.stub()
-      distinct: sinon.stub()
-  
+    listings.collection = collectionStub()
+      
+  describe "#find", ->
+    
+    it 'limits by beds', ->
+      listings.find(bed_min: 2)
+      listings.collection.find.args[0][0].beds["$gte"].should.equal 2
+    
+    it 'limits by baths', ->
+      listings.find(bath_min: 2)
+      listings.collection.find.args[0][0].baths["$gte"].should.equal 2
+    
+    it 'limits by rent', ->
+      listings.find(rent_max: 2000)
+      listings.collection.find.args[0][0].rent["$lte"].should.equal 2000
+    
   describe '#upsert', ->
     
     it 'upserts restricting to urls', ->
