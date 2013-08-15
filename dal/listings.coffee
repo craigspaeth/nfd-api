@@ -42,17 +42,16 @@ DEFAULT_PAGE_SIZE = 50
   @collection.findOne { _id: new ObjectID(id) }, callback
   
 @find = (params, callback) =>
+  pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
   query = {}
   query.beds = { $gte: parseInt params.bed_min } if params.bed_min?
   query.baths = { $gte: parseInt params.bath_min } if params.bath_min?
   query.rent = { $lte: parseInt params.rent_max } if params.rent_max?
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
-  pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
-  page = params.page or 0
-  cursor = @collection.find(query).skip(pageSize * page).limit(pageSize)
-  cursor.sort({ price: 1 }) if params.sort is 'price'
-  cursor.sort({ beds: -1, baths: -1 }) if  params.sort is 'size'
-  cursor.toArray(callback)
+  cursor = @collection.find(query)
+  cursor.sort(rent: 1) if params.sort is 'rent'
+  cursor.sort(beds: -1, baths: -1) if  params.sort is 'size'
+  cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray(callback)
 
 @geocode = (listing, callback) =>
   return callback("Listing must have a name.") unless listing.location.name
