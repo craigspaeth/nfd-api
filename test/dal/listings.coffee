@@ -21,6 +21,21 @@ describe 'listings', ->
     it 'limits by rent', ->
       listings.find(rent_max: 2000)
       listings.collection.find.args[0][0].rent["$lte"].should.equal 2000
+      
+    it 'limits by size', ->
+      listings.find(size: 10, page: 1)
+      listings.collection.limit.args[0][0].should.equal 10
+      
+    it 'accepts page params', ->
+      listings.find(size: 10, page: 1)
+      listings.collection.skip.args[0][0].should.equal 10
+      
+    it 'filters by neighborhoods', ->
+      listings.find(neighborhoods: ['bar', 'foo'])
+      _.isEqual(
+        listings.collection.find.args[0][0]['location.neighborhood']
+        { $in: ['bar', 'foo'] }
+      ).should.be.ok
     
   describe '#upsert', ->
     

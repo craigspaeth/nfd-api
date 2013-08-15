@@ -30,7 +30,7 @@
 _ = require 'underscore'
 { ObjectID } = mongodb = require 'mongodb'
 @gm = require 'googlemaps'
-PAGE_SIZE = 50
+DEFAULT_PAGE_SIZE = 50
 
 @upsert = (listings, callback = ->) =>
   listings = [listings] unless _.isArray(listings)
@@ -42,13 +42,16 @@ PAGE_SIZE = 50
   @collection.findOne { _id: new ObjectID(id) }, callback
   
 @find = (params, callback) =>
-  options = {}
-  options.beds = { $gte: parseInt params.bed_min } if params.bed_min?
-  options.baths = { $gte: parseInt params.bath_min } if params.bath_min?
-  options.rent = { $lte: parseInt params.rent_max } if params.rent_max?
-  @collection.find(options)
-             .skip(PAGE_SIZE * options.page or 0)
-             .limit(PAGE_SIZE)
+  query = {}
+  query.beds = { $gte: parseInt params.bed_min } if params.bed_min?
+  query.baths = { $gte: parseInt params.bath_min } if params.bath_min?
+  query.rent = { $lte: parseInt params.rent_max } if params.rent_max?
+  query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
+  pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
+  page = params.page or 0
+  @collection.find(query)
+             .skip(pageSize * page)
+             .limit(pageSize)
              .toArray callback
 
 @geocode = (listing, callback) =>
@@ -74,9 +77,9 @@ PAGE_SIZE = 50
     callback null, _.without(results, null).sort()
     
 @toJSON = (listings) ->
-  if _.isArray(listings) then (@schema(listing) for listing in listings) else @schema(listings)
+  if _.isArray(listings) then (schema(listing) for listing in listings) else schema(listings)
 
-@schema = (doc) ->
+schema = (doc) ->
   _.extend doc,
     id: doc._id
     _id: undefined
