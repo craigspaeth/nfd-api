@@ -50,7 +50,7 @@ DEFAULT_PAGE_SIZE = 50
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
   cursor = @collection.find(query)
   cursor.sort(rent: 1) if params.sort is 'rent'
-  cursor.sort(beds: -1, baths: -1) if  params.sort is 'size'
+  cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
   cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray(callback)
 
 @geocode = (listing, callback) =>

@@ -22,7 +22,7 @@ module.exports =
     dal.listings.find req.query, (err, docs) ->
       return res.send 500 if err
       res.send dal.listings.toJSON docs
-    
+      
 'GET /listings/:id':
   desc: """
   Retrieves a listing by id.
