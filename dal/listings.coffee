@@ -49,10 +49,10 @@ DEFAULT_PAGE_SIZE = 50
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
   pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
   page = params.page or 0
-  @collection.find(query)
-             .skip(pageSize * page)
-             .limit(pageSize)
-             .toArray callback
+  cursor = @collection.find(query).skip(pageSize * page).limit(pageSize)
+  cursor.sort({ price: 1 }) if params.sort is 'price'
+  cursor.sort({ beds: -1, baths: -1 }) if  params.sort is 'size'
+  cursor.toArray(callback)
 
 @geocode = (listing, callback) =>
   return callback("Listing must have a name.") unless listing.location.name

@@ -36,6 +36,15 @@ describe 'listings', ->
         listings.collection.find.args[0][0]['location.neighborhood']
         { $in: ['bar', 'foo'] }
       ).should.be.ok
+      
+    it 'sorts by price', ->
+      listings.find(sort: 'price')
+      listings.collection.sort.args[0][0].price.should.equal 1
+    
+    it 'sorts by size', ->
+      listings.find(sort: 'size')
+      listings.collection.sort.args[0][0].beds.should.equal -1
+      listings.collection.sort.args[0][0].baths.should.equal -1
     
   describe '#upsert', ->
     
