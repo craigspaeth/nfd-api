@@ -104,6 +104,35 @@ describe 'listings', ->
         (err?).should.be.ok
         done()
         
+    it 'does not geocode non-new york cities', (done) ->
+      listings.gm = { geocode: sinon.stub() }
+      listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
+        listing.location.formatted_address.should.equal 'Kewl York, New York, NY'
+        done()
+      listings.gm.geocode.args[0][1] null,
+        results: [
+            {
+              address_components: []
+              formatted_address: "245 East 124th Street, Cincinnati OH"
+            }
+            {
+              address_components: [
+                long_name: "East Harlem"
+                short_name: "East Harlem"
+                types: ["neighborhood", "political"]
+              ]
+              formatted_address: "Kewl York, New York, NY"
+              geometry:
+                location:
+                  lat: 40.802391
+                  lng: -73.934573             
+            }
+            {
+              address_components: []
+              formatted_address: "245 East 124th Street, Cincinnati OH"
+            }
+          ]
+        
   describe '#findNeighborhoods', ->
     
     it 'distincts the neighborhoods and returns the results', (done) ->
