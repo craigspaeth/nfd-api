@@ -32,7 +32,7 @@ Browser = require 'zombie'
 # @param {Function} callback Callsback with (err, urls)
 
 fetchListingUrls = (page, callback) ->
-  console.log "Fetching page #{page}..."
+  console.log "Fetching page #{page} from StreetEasy..."
   url = "http://streeteasy.com/nyc/rentals/nyc/rental_type:frbo,brokernofee?" + 
         "page=#{page}&sort_by=listed_desc"
   Browser.visit url, { silent:true }, (err, browser) ->

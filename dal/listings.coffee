@@ -70,6 +70,14 @@ DEFAULT_PAGE_SIZE = 50
       return callback(err) if err
       callback null, listing
 
+@removeBad = (callback) ->
+  @collection.remove {
+    $or: [
+      { 'location.formatted_address': null }
+      { pictures: { $size: 0 } }
+    ]
+  }, callback
+
 @findNeighborhoods = (callback) =>
   @collection.distinct 'location.neighborhood', (err, results) ->
     return callback err if err
