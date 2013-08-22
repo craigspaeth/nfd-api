@@ -137,19 +137,26 @@ describe 'listings', ->
     
     it 'distincts the neighborhoods and returns the results', (done) ->
       listings.collection.distinct.callsArgWith 1, null, ['foo', 'bar']
-      listings.findNeighborhoods (err, results) ->
-        results[0].should.equal 'bar'
-        results[1].should.equal 'foo'
+      listings.findNeighborhoods (err, groups) ->
+        groups['Other'][0].should.equal 'bar'
+        groups['Other'][1].should.equal 'foo'
         done()
       
     it 'ignores null neighborhoods', (done) ->
       listings.collection.distinct.callsArgWith 1, null, ['foo', 'bar', null]
-      listings.findNeighborhoods (err, results) ->
-        results.length.should.equal 2
+      listings.findNeighborhoods (err, groups) ->
+        groups['Other'].length.should.equal 2
         done()
       
     it 'sorts alphabetically', (done) ->
       listings.collection.distinct.callsArgWith 1, null, ['a', 'd', 'c', 'b']
-      listings.findNeighborhoods (err, results) ->
-        results.join('').should.equal 'abcd'
+      listings.findNeighborhoods (err, groups) ->
+        groups['Other'].join('').should.equal 'abcd'
+        done()
+        
+    it 'groups neighborhoods into their proper larger groups', (done) ->
+      listings.collection.distinct.callsArgWith 1, null, ['UES', 'Clinton Hill']
+      listings.findNeighborhoods (err, groups) ->
+        groups['South Brooklyn'][0].should.equal 'Clinton Hill'
+        groups['Uptown'][0].should.equal 'UES'
         done()

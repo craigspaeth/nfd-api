@@ -31,6 +31,41 @@ _ = require 'underscore'
 { ObjectID } = mongodb = require 'mongodb'
 @gm = require 'googlemaps'
 DEFAULT_PAGE_SIZE = 50
+NEIGHBORHOOD_GROUPS =
+  'Uptown': [
+    'Lenox Hill'
+    'Lincoln Square'
+    'UES'
+    'UWS'
+  ]
+  'Midtown': [
+    'Chelsea'
+    'Gramercy Park'
+    "Hell's Kitchen"
+    'Kips Bay'
+    'Midtown'
+    'Turtle Bay'
+  ]
+  'Downtown': [
+    'Lower Manhattan'
+  ]
+  'South Brooklyn': [
+    'Clinton Hill'
+    'Crown Heights'
+    'Downtown Brooklyn'
+    'Sheepshead Bay'
+  ]
+  'North Brooklyn': [
+    'Bushwick'
+    'Williamsburg'
+  ]
+  'Queens': [
+    'LIC'
+    'Roosevelt Island'
+  ]
+  'Bronx': [
+    'Kingsbridge'
+  ]
 
 @upsert = (listings, callback = ->) =>
   listings = [listings] unless _.isArray(listings)
@@ -80,9 +115,17 @@ DEFAULT_PAGE_SIZE = 50
 
 @findNeighborhoods = (callback) =>
   @collection.distinct 'location.neighborhood', (err, results) ->
-    return callback err if err
-    callback null, _.without(results, null).sort()
-    
+    return callback err if err 
+    groups = {}
+    neighborhoods = _.without(results, null).sort()
+    ungroupped = _.without(neighborhoods, _.flatten(_.values(NEIGHBORHOOD_GROUPS))...)
+    groups['Other'] = ungroupped if ungroupped.length
+    for neighborhood in neighborhoods
+      for groupName, groupNeighborhoods of NEIGHBORHOOD_GROUPS
+        if neighborhood in groupNeighborhoods
+          (groups[groupName] ?= []).push(neighborhood)
+    callback null, groups
+
 @toJSON = (listings) ->
   if _.isArray(listings) then (schema(listing) for listing in listings) else schema(listings)
 
