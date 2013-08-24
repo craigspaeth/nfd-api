@@ -19,9 +19,9 @@ module.exports =
   *page*: Page of results to fetch.
   """
   cb: (req, res) ->
-    dal.listings.find req.query, (err, docs) ->
+    dal.listings.find req.query, (err, listings) ->
       return res.send 500 if err
-      res.send dal.listings.toJSON docs
+      res.send listings
       
 'GET /listings/:id':
   desc: """

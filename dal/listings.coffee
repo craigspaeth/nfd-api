@@ -3,8 +3,7 @@
 # An apartment listing. Contains information about the apartment, who to contact,
 # where the listing came from, and more.
 # 
-# Common Schema:
-# 
+# Schema: {
 #   pictures: [String],
 #   rent: Number,
 #   beds: Number,
@@ -17,7 +16,7 @@
 #     neighborhood: String
 #   }
 #   url: String,
-#   contact_info: {
+#   contactInfo: {
 #     name: String,
 #     phone_number: String,
 #     email: String,
@@ -25,11 +24,14 @@
 #     address: String
 #   },
 #   description: String,
-#   listed_date: Date
+#   dateScraped: Date
+#   dateListed: Date
+# }
 
 _ = require 'underscore'
 { ObjectID } = mongodb = require 'mongodb'
 @gm = require 'googlemaps'
+
 DEFAULT_PAGE_SIZE = 50
 NEIGHBORHOOD_GROUPS =
   'Uptown': [
@@ -67,15 +69,31 @@ NEIGHBORHOOD_GROUPS =
     'Kingsbridge'
   ]
 
+# Upserts listings into mongo using the listing url as the identifier for unique listings.
+# 
+# @param {Object} listings Array or single listing
+# @param {Function} callback Calls back with (err, docs)
+
 @upsert = (listings, callback = ->) =>
   listings = [listings] unless _.isArray(listings)
   callback = _.after listings.length, callback
   for listing in listings
     @collection.update { url: listing.url }, listing, { upsert: true }, callback
 
+# Convenient alias to mongo findOne.
+# 
+# @param {String} id
+# @param {Function} callback Calls back with (err, doc)
+
 @findOne = (id, callback) =>
   @collection.findOne { _id: new ObjectID(id) }, callback
-  
+
+# A `find` operation that is allowed by users. Pass in params that would be
+# sent via query params and it'll translate that into the right mongo queries.
+# 
+# @param {Object} params Query params see the API documentation.
+# @param {Function} callback Calls back with (err, listings)
+
 @find = (params, callback) =>
   pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
   query = {}
@@ -86,7 +104,13 @@ NEIGHBORHOOD_GROUPS =
   cursor = @collection.find(query)
   cursor.sort(rent: 1) if params.sort is 'rent'
   cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
-  cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray(callback)
+  cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray (err, listings) =>
+    callback err, @toJSON listings
+
+# Uses google maps to populate location data and geocode a listing.
+# 
+# @param {Object} listing
+# @param {Function} callback Calls back with (err, listing)
 
 @geocode = (listing, callback) =>
   return callback("Listing must have a name.") unless listing.location.name
@@ -105,6 +129,10 @@ NEIGHBORHOOD_GROUPS =
       return callback(err) if err
       callback null, listing
 
+# Removes listings without useful data such as missing location or no pictures.
+# 
+# @param {Function} callback Calls back with (err)
+
 @removeBad = (callback) ->
   @collection.remove {
     $or: [
@@ -112,6 +140,11 @@ NEIGHBORHOOD_GROUPS =
       { pictures: { $size: 0 } }
     ]
   }, callback
+
+# Gets the neighborhoods from all of the listings via mongo distinct, and maps them into
+# our hash of neighborhood groups.
+# 
+# @param {Function} callback
 
 @findNeighborhoods = (callback) =>
   @collection.distinct 'location.neighborhood', (err, results) ->
@@ -126,10 +159,13 @@ NEIGHBORHOOD_GROUPS =
           (groups[groupName] ?= []).push(neighborhood)
     callback null, groups
 
-@toJSON = (listings) ->
-  if _.isArray(listings) then (schema(listing) for listing in listings) else schema(listings)
+# Converts a raw listing document into a JSON hash useable in our API.
+# 
+# @param {Object} docs Array or object of listing documents
 
-schema = (doc) ->
-  _.extend doc,
-    id: doc._id
-    _id: undefined
+@toJSON = (docs) ->
+  schema = (doc) ->
+    _.extend doc,
+      id: doc._id
+      _id: undefined
+  if _.isArray(docs) then (schema(doc) for doc in docs) else schema(docs)
