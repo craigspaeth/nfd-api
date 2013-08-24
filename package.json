@@ -19,6 +19,7 @@
 		"googlemaps": "*",
 		"mocha": "*",
 		"should": "*",
-		"sinon": "*"
+		"sinon": "*",
+		"accounting": "*"
 	}
 }

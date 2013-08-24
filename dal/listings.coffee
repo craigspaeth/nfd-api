@@ -24,8 +24,9 @@
 #     address: String
 #   },
 #   description: String,
-#   dateScraped: Date
-#   dateListed: Date
+#   dateScraped: Date,
+#   dateListed: Date,
+#   dateGeocoded: Date
 # }
 
 _ = require 'underscore'
@@ -113,19 +114,18 @@ NEIGHBORHOOD_GROUPS =
 # @param {Function} callback Calls back with (err, listing)
 
 @geocode = (listing, callback) =>
-  return callback("Listing must have a name.") unless listing.location.name
   @gm.geocode listing.location.name, (err, res) =>
     return callback(err) if err
     firstResult = (result for result in res?.results when result.formatted_address.match 'NY')[0]
-    return callback("No results.") unless firstResult
-    neighborhood = (comp.short_name for comp in firstResult.address_components \
-                                    when 'neighborhood' in comp.types)[0]
+    return callback(res.status) unless firstResult
     listing.location = _.extend listing.location,
       formatted_address: firstResult.formatted_address
       lng: firstResult.geometry.location.lng
       lat: firstResult.geometry.location.lat
-      neighborhood: neighborhood
-    @upsert [listing], (err, listings) =>
+      neighborhood: (comp.short_name for comp in firstResult.address_components \
+                                     when 'neighborhood' in comp.types)[0]
+    listing.dateGeocoded = new Date
+    @upsert listing, (err, listings) =>
       return callback(err) if err
       callback null, listing
 
@@ -136,7 +136,7 @@ NEIGHBORHOOD_GROUPS =
 @removeBad = (callback) ->
   @collection.remove {
     $or: [
-      { 'location.formatted_address': null }
+      { 'location.name': null }
       { pictures: { $size: 0 } }
     ]
   }, callback

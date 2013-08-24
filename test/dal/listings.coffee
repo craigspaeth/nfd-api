@@ -67,6 +67,26 @@ describe 'listings', ->
     beforeEach ->
       listings.collection.update.callsArgWith 3, null
     
+    it 'stores dateGeocoded', (done) ->
+      listings.gm = { geocode: sinon.stub() }
+      listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
+        listing.dateGeocoded.toString().should.include new Date().getFullYear()
+        done()
+      listings.gm.geocode.args[0][0].should.equal 'foobar'
+      listings.gm.geocode.args[0][1] null,
+        results: [
+            address_components: [
+              long_name: "East Harlem"
+              short_name: "East Harlem"
+              types: ["neighborhood", "political"]
+            ]
+            formatted_address: "245 East 124th Street, New York, NY 10035, USA"
+            geometry:
+              location:
+                lat: 40.802391
+                lng: -73.934573
+          ]
+    
     it 'fetches the geocode data from google maps and injects it into the listing', (done) ->
       listings.gm = { geocode: sinon.stub() }
       listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
@@ -91,12 +111,7 @@ describe 'listings', ->
                 lat: 40.802391
                 lng: -73.934573
           ]
-    
-    it 'errs on listings without location names', (done) ->
-      listings.geocode { location: {} }, (err) ->
-        (err?).should.be.ok
-        done()
-      
+
     it 'errs if there are no results', (done) ->
       listings.gm = { geocode: sinon.stub() }
       listings.gm.geocode.callsArgWith 1, { status: 'ZERO RESULTS' }
