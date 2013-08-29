@@ -17,9 +17,12 @@ module.exports = class Scraper
       @listItemSelector
       @$ToListing
       @zombieOpts
+      @populateLimit
+      @requestsPerMinute
     } = attrs
-    @zombieOpts ?= { silent: true }
-    @browser = new Browser @zombieOpts
+    @zombieOpts = _.extend({ silent: true }, @zombieOpts, { userAgent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
+    })
     
   # Fetches a page of listing urls.
   # 
@@ -30,8 +33,8 @@ module.exports = class Scraper
     host = "http://" + urlLib.parse(@listUrl).host
     url = @listUrl.replace('{page}', page)
     console.log "Fetching page #{page} from #{url}..."
-    @browser.visit url, (err) =>
-      $ = jQuery.create(@browser.window)
+    Browser.visit url, @zombieOpts, (err, browser) =>
+      $ = jQuery.create(browser.window)
       $listings = $(@listItemSelector)
       if $listings?.length is 0
         console.log "ERROR: Found no listings on page #{page}"
@@ -39,23 +42,6 @@ module.exports = class Scraper
       else
         urls = $listings.map((i, el) -> host + $(el).attr('href')).toArray()
         callback null, urls
-
-  # Scrapes a range of pages recursively and saves the empty listings to mongo.
-  # 
-  # @param {Number} start
-  # @param {Number} end
-  # @param {Function} callback Callsback with (err)
-
-  scrapePagesRecur: (start, end, callback) =>  
-    total = end - start + 1
-    console.log "Scraping #{total} pages..."
-    callback = _.after total, callback
-    page = start
-    scrape = =>
-      @scrapePage page, ->
-        page++
-        scrape()
-    scrape()
   
   # Scrapes a range of pages in parallel and saves the empty listings to mongo.
   # 
@@ -63,11 +49,11 @@ module.exports = class Scraper
   # @param {Number} end
   # @param {Function} callback Callsback with (err)
 
-  scrapePagesParallel: (start, end, callback) =>  
-    total = end - start + 1
-    console.log "Scraping #{total} pages..."
-    callback = _.after total, callback
-    @scrapePage(page, callback) for page in [0..total]
+  scrapePages: (start, end, callback) =>  
+    pages = [start..end]
+    console.log "Scraping #{pages.length} pages..."
+    callback = _.after pages.length, callback
+    @scrapePage(page, callback) for page in pages
 
   # Scrapes a single page and saves the empty listings to mongo.
   # 
@@ -75,13 +61,20 @@ module.exports = class Scraper
   # @param {Function} callback Callsback with (err)
 
   scrapePage: (page, callback) =>
-    @fetchListingUrls page, (err, urls) =>
-      return callback('fail') if err
-      listings = ({ url: url } for url in urls)
-      Listings.upsert listings, (err) ->
-        console.log "Saved page #{page}."
-        callback()
-        
+    delay = _.random(
+      ((page - 1) * (60 / @requestsPerMinute)) * 1000
+      (page * (60 / @requestsPerMinute)) * 1000
+    )
+    setTimeout =>
+      @fetchListingUrls page, (err, urls) =>
+        return callback('fail') if err
+        listings = ({ url: url } for url in urls)
+        console.log urls[0]
+        Listings.upsert listings, (err) ->
+          console.log "Saved page #{page}."
+          callback()
+    , delay
+  
   # Scrapes an individual listing and converts it to our data model.
   # 
   # @param {String} url The listing page's url
@@ -89,10 +82,15 @@ module.exports = class Scraper
  
   fetchListing: (url, callback) ->
     console.log "Fetching listing from #{url}..."
-    @browser.visit url, (err) =>
-      $ = jQuery.create(@browser.window)
-      console.log "Saved listing from #{url}."
-      callback null, _.extend @$ToListing($), url: url
+    @browser.visit url, (err) => 
+      @browser.wait =>
+        $ = jQuery.create(@browser.window)
+        if _.isObject @$ToListing($)
+          console.log "Saved listing from #{url}.", @$ToListing($)
+          callback null, _.extend @$ToListing($), url: url
+        else
+          console.log "ERROR from #{url}", @$ToListing($)
+          callback @$ToListing($)
       
   # No-op that converts a browser window context to a listing object close to our schema.
   # 
@@ -106,20 +104,22 @@ module.exports = class Scraper
   # 
   # @param {Function} callback Callsback with (err)
 
-  populateEmptyListings: (limit, callback = ->) ->
-    Listings.collection.find(
-      dateScraped: null
-      url: { $regex: urlLib.parse(@listUrl).host }
-    ).limit(parseInt limit).toArray (err, listings) =>
-      if listings.length is 0
-        console.log "All listings scraped!"
-        callback()
-        return
-      console.log "Scraping #{listings.length} listings..."
-      callback = _.after listings.length, callback
-      for { url } in listings
-        @fetchListing url, (err, listing) =>
-          return if err
-          listing.dateScraped = new Date
-          Listings.upsert(listing)
+  populateEmptyListings: (callback = ->) ->
+    scrapeBatch = =>
+      Listings.collection.find(
+        dateScraped: null
+        url: { $regex: urlLib.parse(@listUrl).host }
+      ).limit(parseInt @populateLimit).toArray (err, listings) =>
+        if listings.length is 0
+          console.log "All listings scraped!"
           callback()
+          return
+        console.log "Scraping #{listings.length} listings..."
+        recurScrapeBatch = _.after listings.length, scrapeBatch
+        for { url } in listings
+          @fetchListing url, (err, listing) =>
+            return recurScrapeBatch() if err
+            listing.dateScraped = new Date
+            Listings.upsert(listing)
+            recurScrapeBatch()
+    scrapeBatch()

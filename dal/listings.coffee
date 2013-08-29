@@ -69,6 +69,11 @@ NEIGHBORHOOD_GROUPS =
   'Bronx': [
     'Kingsbridge'
   ]
+BAD_PARAMS =
+  $or: [
+    { 'location.name': null }
+    { 'rent': 0 }
+  ]
 
 # Upserts listings into mongo using the listing url as the identifier for unique listings.
 # 
@@ -129,17 +134,19 @@ NEIGHBORHOOD_GROUPS =
       return callback(err) if err
       callback null, listing
 
+# Says the number of bad listings there are.
+# 
+# @param {Function} callback Calls back with (err, count)
+
+@countBad = (callback) ->
+  @collection.count BAD_PARAMS, callback
+
 # Removes listings without useful data such as missing location or no pictures.
 # 
 # @param {Function} callback Calls back with (err)
 
-@removeBad = (callback) ->
-  @collection.remove {
-    $or: [
-      { 'location.name': null }
-      { pictures: { $size: 0 } }
-    ]
-  }, callback
+@removeBad = (callback) =>
+  @collection.remove BAD_PARAMS, callback
 
 # Gets the neighborhoods from all of the listings via mongo distinct, and maps them into
 # our hash of neighborhood groups.
