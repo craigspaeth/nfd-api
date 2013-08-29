@@ -17,7 +17,6 @@ module.exports = class Scraper
       @listItemSelector
       @$ToListing
       @zombieOpts
-      @populateLimit
       @requestsPerMinute
     } = attrs
     @zombieOpts = _.extend({ silent: true }, @zombieOpts, { userAgent:
@@ -80,17 +79,20 @@ module.exports = class Scraper
   # @param {String} url The listing page's url
   # @param {Function} Callsback with (err, listing)
  
-  fetchListing: (url, callback) ->
-    console.log "Fetching listing from #{url}..."
-    @browser.visit url, (err) => 
-      @browser.wait =>
-        $ = jQuery.create(@browser.window)
-        if _.isObject @$ToListing($)
-          console.log "Saved listing from #{url}.", @$ToListing($)
-          callback null, _.extend @$ToListing($), url: url
-        else
-          console.log "ERROR from #{url}", @$ToListing($)
-          callback @$ToListing($)
+  fetchListing: (url, total, callback) ->
+    delay = _.random 0, ((60 / @requestsPerMinute) * 1000) * total
+    setTimeout =>
+      console.log "Fetching listing from #{url}..."
+      Browser.visit url, @zombieOpts, (err, browser) => 
+        browser.wait =>
+          $ = jQuery.create(browser.window)
+          if _.isObject @$ToListing($)
+            console.log "Saved listing from #{url}.", @$ToListing($)
+            callback null, _.extend @$ToListing($), url: url
+          else
+            console.log "ERROR from #{url}", @$ToListing($)
+            callback @$ToListing($)
+    , delay
       
   # No-op that converts a browser window context to a listing object close to our schema.
   # 
@@ -105,21 +107,16 @@ module.exports = class Scraper
   # @param {Function} callback Callsback with (err)
 
   populateEmptyListings: (callback = ->) ->
-    scrapeBatch = =>
-      Listings.collection.find(
-        dateScraped: null
-        url: { $regex: urlLib.parse(@listUrl).host }
-      ).limit(parseInt @populateLimit).toArray (err, listings) =>
-        if listings.length is 0
-          console.log "All listings scraped!"
-          callback()
-          return
-        console.log "Scraping #{listings.length} listings..."
-        recurScrapeBatch = _.after listings.length, scrapeBatch
-        for { url } in listings
-          @fetchListing url, (err, listing) =>
-            return recurScrapeBatch() if err
-            listing.dateScraped = new Date
-            Listings.upsert(listing)
-            recurScrapeBatch()
-    scrapeBatch()
+    Listings.collection.find(
+      dateScraped: null
+      url: { $regex: urlLib.parse(@listUrl).host }
+    ).toArray (err, listings) =>
+      if listings.length is 0
+        console.log "All listings scraped!"
+        callback()
+        return
+      console.log "Scraping #{listings.length} listings..."
+      for { url } in listings
+        @fetchListing url, listings.length, (err, listing) =>
+          listing.dateScraped = new Date
+          Listings.upsert(listing)
