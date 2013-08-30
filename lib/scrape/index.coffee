@@ -23,8 +23,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('h1 .price').text()
-      beds: parseFloat $('.data').text().match(/[\.\d]* bed/)
-      baths: parseFloat $('.data').text().match(/[\.\d]* bath/)
+      beds: parseFloat($('.data').text().match(/[\.\d]* bed/)) or null
+      baths: parseFloat($('.data').text().match(/[\.\d]* bath/)) or null
       location: 
         name: $('h1 span').text()
       pictures: $('.photo.medium > a').map(-> $(@).attr 'href').toArray()
@@ -39,8 +39,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('#listing-overview > div:first-child').text()
-      beds: parseFloat $('#listing-overview').text().match(/[\.\d]* bed/i)
-      baths: parseFloat $('#listing-overview').text().match(/[\.\d]* bath/i)
+      beds: parseFloat($('#listing-overview').text().match(/[\.\d]* bed/i)) or null
+      baths: parseFloat($('#listing-overview').text().match(/[\.\d]* bath/i)) or null
       location: 
         name: _.clean($('.address-block').text())
       pictures: $('#slide-runner a').map(->
@@ -65,7 +65,7 @@ scrapers =
                  $(@).find("td:eq(0)").text().match /Building/).find("td:eq(1)").text()
       {
         rent: accounting.unformat(rent)
-        beds: parseFloat(if layout.match /studio/i then 1 else layout)
+        beds: parseFloat(if layout.match /studio/i then 1 else layout) or null
         baths: null
         location:
           name: _.clean(building)
@@ -76,6 +76,7 @@ scrapers =
     startPage: 1
     requestsPerMinute: 15
     listingsPerPage: 28
+    zombieOpts: { runScripts: false }
     listUrl: (page) ->
       "http://apartable.com/apartments?broker_fee=false&city=New+York" + 
       "&page=#{page}&state=New+York&utf8=%E2%9C%93"
@@ -83,8 +84,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('.price').text()
-      beds: parseFloat $('.bedrooms').text().match(/[\.\d]* bed/i)
-      baths: parseFloat $('.bathrooms').text().match(/[\.\d]* bath/i)
+      beds: parseFloat($('.bedrooms').text().match(/[\.\d]* bed/i)) or null
+      baths: parseFloat($('.bathrooms').text().match(/[\.\d]* bath/i)) or null
       location: 
         name: $('#map-container h3').text()
       pictures: $('#galleria a').map(-> $(@).attr 'href').toArray()
