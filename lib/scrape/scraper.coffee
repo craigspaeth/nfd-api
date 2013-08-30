@@ -115,6 +115,7 @@ module.exports = class Scraper
       callback = _.after listings.length, callback
       for { url } in listings
         @fetchListing url, listings.length, (err, listing) =>
+          return callback(err) if err
           listing.dateScraped = new Date
           Listings.upsert(listing)
           callback()

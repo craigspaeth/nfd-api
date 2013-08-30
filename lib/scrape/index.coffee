@@ -8,7 +8,7 @@ accounting = require 'accounting'
 _ = require 'underscore'
 _.mixin require 'underscore.string'
 
-TOTAL_LISTINGS_LIMIT = 5000
+TOTAL_LISTINGS = 50
 
 scrapers =
   
@@ -102,18 +102,22 @@ dal.connect =>
     scraper.scrapePages parseInt(process.argv[3]), parseInt(process.argv[4]), -> process.exit()
   
   # Scrape listings themself with `coffee lib/scrape streeteasy`
-  else if process.argv[2]
-    scraper.populateEmptyListings (parseInt(process.argv[3]) or TOTAL_LISTINGS_LIMIT), -> process.exit()
+  else if process.argv[3]
+    scraper.populateEmptyListings (parseInt(process.argv[3]) or TOTAL_LISTINGS), -> process.exit()
   
-  # Scrape ALL THE THINGS with  with `coffee lib/scrape`
-  else
-    perScraperLimit = TOTAL_LISTINGS_LIMIT / _.keys(scrapers).length
+  # Scrape ALL THE PAGES with  with `coffee lib/scrape pages`
+  else if process.args[2] is 'pages'
+    perScraperLimit = TOTAL_LISTINGS / _.keys(scrapers).length
     for name, scraper of scrapers
       scraper.scrapePages(
         scraper.startPage
         Math.round (perScraperLimit / scraper.listingsPerPage) * scraper.weight
-        ->
-          for name, scraper of scrapers
-            callback = _.after scrapers.length, -> process.exit()
-            scraper.populateEmptyListings TOTAL_LISTINGS_LIMIT, callback
+        -> process.exit()
       )
+  
+  # Scrape ALL THE PAGES with  with `coffee lib/scrape listings`
+  else if process.args[2] is 'listings'
+    for name, scraper of scrapers
+      callback = _.after scrapers.length, -> process.exit()
+      scraper.populateEmptyListings TOTAL_LISTINGS, callback
+    
