@@ -18,6 +18,8 @@ module.exports = class Scraper
       @$ToListing
       @zombieOpts
       @requestsPerMinute
+      @listingsPerPage
+      @startPage
     } = attrs
     @zombieOpts = _.extend({ silent: true }, @zombieOpts, { userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
@@ -39,21 +41,9 @@ module.exports = class Scraper
         console.log "ERROR: Found no listings on page #{page}"
         callback {}
       else
-        urls = $listings.map((i, el) -> host + $(el).attr('href')).toArray()
+        urls = $listings.map((i, el) -> urlLib.resolve host, $(el).attr 'href').toArray()
         callback null, urls
   
-  # Scrapes a range of pages in parallel and saves the empty listings to mongo.
-  # 
-  # @param {Number} start
-  # @param {Number} end
-  # @param {Function} callback Callsback with (err)
-
-  scrapePages: (start, end, callback) =>  
-    pages = [start..end]
-    console.log "Scraping #{pages.length} pages..."
-    callback = _.after pages.length, callback
-    @scrapePage(page, callback) for page in pages
-
   # Scrapes a single page and saves the empty listings to mongo.
   # 
   # @param {Number} page
@@ -74,6 +64,18 @@ module.exports = class Scraper
           callback()
     , delay
   
+  # Scrapes a range of pages in parallel and saves the empty listings to mongo.
+  # 
+  # @param {Number} start
+  # @param {Number} end
+  # @param {Function} callback Callsback with (err)
+
+  scrapePages: (start, end, callback) =>  
+    pages = [start..end]
+    console.log "Scraping #{pages.length} pages..."
+    callback = _.after pages.length, callback
+    @scrapePage(page, callback) for page in pages
+  
   # Scrapes an individual listing and converts it to our data model.
   # 
   # @param {String} url The listing page's url
@@ -93,13 +95,6 @@ module.exports = class Scraper
             console.log "ERROR from #{url}", @$ToListing($)
             callback @$ToListing($)
     , delay
-      
-  # No-op that converts a browser window context to a listing object close to our schema.
-  # 
-  # @param {Object} window The Browser window
-  # @return {Object} The listing object to be persisted into mongo
-  
-  $ToListing: (window) ->
     
   # Goes through listings without `dateScraped` and populates them by scraping
   # their urls.
@@ -116,7 +111,16 @@ module.exports = class Scraper
         callback()
         return
       console.log "Scraping #{listings.length} listings..."
+      callback = _.after listings.length, callback
       for { url } in listings
         @fetchListing url, listings.length, (err, listing) =>
           listing.dateScraped = new Date
           Listings.upsert(listing)
+          callback()
+          
+  # No-op that converts a browser window context to a listing object close to our schema.
+  # 
+  # @param {Object} window The Browser window
+  # @return {Object} The listing object to be persisted into mongo
+  
+  $ToListing: (window) ->

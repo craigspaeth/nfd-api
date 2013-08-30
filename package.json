@@ -9,6 +9,7 @@
     "express": "*",
 		"coffee-script": "*",
 		"underscore": "*",
+		"underscore.string": "*",
 		"mongodb": "*",
 		"validator": "*",
 		"cors": "*"
