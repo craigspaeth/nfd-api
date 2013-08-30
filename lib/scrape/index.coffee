@@ -27,7 +27,7 @@ scrapers =
       baths: parseFloat $('.data').text().match(/[\.\d]* bath/)
       location: 
         name: $('h1 span').text()
-      pictures: $('.photo.medium > a').map((i, el) -> $(el).attr 'href').toArray()
+      pictures: $('.photo.medium > a').map(-> $(@).attr 'href').toArray()
       
   urbanedge: new Scraper
     startPage: 0
@@ -43,8 +43,8 @@ scrapers =
       baths: parseFloat $('#listing-overview').text().match(/[\.\d]* bath/i)
       location: 
         name: _.clean($('.address-block').text())
-      pictures: $('#slide-runner a').map((i, el) ->
-        "http://www.urbanedgeny.com" + $(el).attr 'href').toArray()
+      pictures: $('#slide-runner a').map(->
+        "http://www.urbanedgeny.com" + $(@).attr 'href').toArray()
         
   nybits: new Scraper
     startPage: 0
@@ -69,7 +69,7 @@ scrapers =
         baths: null
         location:
           name: _.clean(building)
-        pictures: $('.photocolumntitle').nextAll('img').map((i, el) -> $(el).attr 'src').toArray()
+        pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
       }
       
   apartable: new Scraper
@@ -87,20 +87,19 @@ scrapers =
       baths: parseFloat $('.bathrooms').text().match(/[\.\d]* bath/i)
       location: 
         name: $('#map-container h3').text()
-      pictures: $('.galleria-thumbnails-list img').map((i, el) ->
-        $(el).attr('src').replace(/h_\d*,w_\d*/, 'h_800,w_800')).toArray()
+      pictures: $('#galleria a').map(-> $(@).attr 'href').toArray()
 
 return unless module is require.main
 dal.connect =>
   scraper = scrapers[process.argv[2]]
   
   # Scrape pages of listings with `coffee lib/scrape streeteasy 0 1`
-  if process.argv[3]
+  if process.argv[4]
     scraper.scrapePages parseInt(process.argv[3]), parseInt(process.argv[4]), -> process.exit()
   
   # Scrape listings themself with `coffee lib/scrape streeteasy`
   else if process.argv[2]
-    scraper.populateEmptyListings (process.argv[2] or TOTAL_LISTINGS_LIMIT), -> process.exit()
+    scraper.populateEmptyListings (parseInt(process.argv[3]) or TOTAL_LISTINGS_LIMIT), -> process.exit()
   
   # Scrape ALL THE THINGS with  with `coffee lib/scrape`
   else
