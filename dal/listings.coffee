@@ -73,6 +73,7 @@ BAD_PARAMS =
   $or: [
     { 'location.name': null }
     { 'rent': 0 }
+    { pictures: { $size: 0 } }
   ]
 
 # Upserts listings into mongo using the listing url as the identifier for unique listings.

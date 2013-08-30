@@ -101,11 +101,11 @@ module.exports = class Scraper
   # 
   # @param {Function} callback Callsback with (err)
 
-  populateEmptyListings: (callback = ->) ->
+  populateEmptyListings: (limit, callback = ->) ->
     Listings.collection.find(
       dateScraped: null
       url: { $regex: @host }
-    ).toArray (err, listings) =>
+    ).limit(limit).toArray (err, listings) =>
       if listings.length is 0
         console.log "All listings scraped!"
         callback()

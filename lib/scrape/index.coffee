@@ -71,6 +71,24 @@ scrapers =
           name: _.clean(building)
         pictures: $('.photocolumntitle').nextAll('img').map((i, el) -> $(el).attr 'src').toArray()
       }
+      
+  apartable: new Scraper
+    startPage: 1
+    requestsPerMinute: 15
+    listingsPerPage: 28
+    listUrl: (page) ->
+      "http://apartable.com/apartments?broker_fee=false&city=New+York" + 
+      "&page=#{page}&state=New+York&utf8=%E2%9C%93"
+    listItemSelector: 'a.map-link'
+    $ToListing: ($) ->
+      return $('html').html() unless $('html').html().length > 30
+      rent: accounting.unformat $('.price').text()
+      beds: parseFloat $('.bedrooms').text().match(/[\.\d]* bed/i)
+      baths: parseFloat $('.bathrooms').text().match(/[\.\d]* bath/i)
+      location: 
+        name: $('#map-container h3').text()
+      pictures: $('.galleria-thumbnails-list img').map((i, el) ->
+        $(el).attr('src').replace(/h_\d*,w_\d*/, 'h_800,w_800')).toArray()
 
 return unless module is require.main
 dal.connect =>
@@ -82,7 +100,7 @@ dal.connect =>
   
   # Scrape listings themself with `coffee lib/scrape streeteasy`
   else if process.argv[2]
-    scraper.populateEmptyListings -> process.exit()
+    scraper.populateEmptyListings (process.argv[2] or TOTAL_LISTINGS_LIMIT), -> process.exit()
   
   # Scrape ALL THE THINGS with  with `coffee lib/scrape`
   else
