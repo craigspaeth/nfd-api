@@ -9,7 +9,7 @@ _ = require 'underscore'
 _.mixin require 'underscore.string'
 
 TOTAL_LISTINGS = 5000
-REQUESTS_PER_MINUTE = 2
+REQUESTS_PER_MINUTE = 10
 KILL_IN = ((60 / REQUESTS_PER_MINUTE) * (1000 * 60)) * 3
 
 scrapers =
