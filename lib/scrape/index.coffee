@@ -8,14 +8,15 @@ accounting = require 'accounting'
 _ = require 'underscore'
 _.mixin require 'underscore.string'
 
-TOTAL_LISTINGS_LIMIT = 2500
+TOTAL_LISTINGS_LIMIT = 5000
 
 scrapers =
   
   streeteasy: new Scraper
     startPage: 1
-    requestsPerMinute: 15
+    requestsPerMinute: 10
     listingsPerPage: 10
+    weight: 0.25
     listUrl: (page) -> 
       "http://streeteasy.com/nyc/rentals/nyc/rental_type:frbo,brokernofee?" + 
       "page=#{page}&sort_by=listed_desc"
@@ -31,8 +32,9 @@ scrapers =
       
   urbanedge: new Scraper
     startPage: 0
-    requestsPerMinute: 15
+    requestsPerMinute: 10
     listingsPerPage: 10
+    weight: 0.25
     listUrl: (page) ->
       "http://www.urbanedgeny.com/results?page=#{page}&nh1=90&p[min]=&p[max]=&bd=&ba="
     listItemSelector: '.property-title a'
@@ -48,8 +50,9 @@ scrapers =
         
   nybits: new Scraper
     startPage: 0
-    requestsPerMinute: 15
+    requestsPerMinute: 10
     listingsPerPage: 200
+    weight: 4
     listUrl: (page) ->
       "http://www.nybits.com/search/?_a%21process=y&_rid_=3&_ust_todo_=65733&_xid_=" +
       "aaLx8ms445ZfSq-1377828951&%21%21rmin=&%21%21rmax=&%21%21fee=nofee&%21%21orderby=" + 
@@ -74,9 +77,9 @@ scrapers =
       
   apartable: new Scraper
     startPage: 1
-    requestsPerMinute: 15
+    requestsPerMinute: 10
     listingsPerPage: 28
-    zombieOpts: { runScripts: false }
+    weight: 0.25
     listUrl: (page) ->
       "http://apartable.com/apartments?broker_fee=false&city=New+York" + 
       "&page=#{page}&state=New+York&utf8=%E2%9C%93"
@@ -108,5 +111,9 @@ dal.connect =>
     for name, scraper of scrapers
       scraper.scrapePages(
         scraper.startPage
-        Math.round(perScraperLimit / scraper.listingsPerPage) - 1
+        Math.round (perScraperLimit / scraper.listingsPerPage) * scraper.weight
+        ->
+          for name, scraper of scrapers
+            callback = _.after scrapers.length, -> process.exit()
+            scraper.populateEmptyListings TOTAL_LISTINGS_LIMIT, callback
       )

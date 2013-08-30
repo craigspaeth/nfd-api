@@ -20,6 +20,7 @@ module.exports = class Scraper
       @requestsPerMinute
       @listingsPerPage
       @startPage
+      @weight
     } = attrs
     @host = urlLib.parse(@listUrl 0).host
     @zombieOpts = _.extend({ silent: true }, @zombieOpts, { userAgent:
@@ -37,7 +38,7 @@ module.exports = class Scraper
       $ = jQuery.create(browser.window)
       $listings = $(@listItemSelector)
       if $listings?.length is 0
-        console.log "ERROR: Found no listings on page #{page}"
+        console.log "ERROR: Found no listings for on page #{page}: #{@listUrl page}"
         callback {}
       else
         urls = $listings.map((i, el) => 
