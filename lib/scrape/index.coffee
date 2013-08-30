@@ -8,13 +8,15 @@ accounting = require 'accounting'
 _ = require 'underscore'
 _.mixin require 'underscore.string'
 
-TOTAL_LISTINGS = 50
+TOTAL_LISTINGS = 5000
+REQUESTS_PER_MINUTE = 2
+KILL_IN = ((60 / REQUESTS_PER_MINUTE) * (1000 * 60)) * 3
 
 scrapers =
   
   streeteasy: new Scraper
     startPage: 1
-    requestsPerMinute: 10
+    requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 10
     weight: 0.25
     listUrl: (page) -> 
@@ -32,7 +34,7 @@ scrapers =
       
   urbanedge: new Scraper
     startPage: 0
-    requestsPerMinute: 10
+    requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 10
     weight: 0.25
     listUrl: (page) ->
@@ -50,7 +52,7 @@ scrapers =
         
   nybits: new Scraper
     startPage: 0
-    requestsPerMinute: 10
+    requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 200
     weight: 4
     listUrl: (page) ->
@@ -77,7 +79,7 @@ scrapers =
       
   apartable: new Scraper
     startPage: 1
-    requestsPerMinute: 10
+    requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 28
     weight: 0.25
     listUrl: (page) ->
@@ -97,16 +99,20 @@ return unless module is require.main
 dal.connect =>
   scraper = scrapers[process.argv[2]]
   
+  # No matter the process it shouldn't take longer than 3 times the ammount of time
+  # we predict it will take.
+  setTimeout (-> process.exit()), KILL_IN
+  
   # Scrape pages of listings with `coffee lib/scrape streeteasy 0 1`
   if process.argv[4]
     scraper.scrapePages parseInt(process.argv[3]), parseInt(process.argv[4]), -> process.exit()
   
-  # Scrape listings themself with `coffee lib/scrape streeteasy`
+  # Scrape listings themself with `coffee lib/scrape streeteasy 10`
   else if process.argv[3]
-    scraper.populateEmptyListings (parseInt(process.argv[3]) or TOTAL_LISTINGS), -> process.exit()
+    scraper.populateEmptyListings parseInt(process.argv[3]), -> process.exit()
   
   # Scrape ALL THE PAGES with  with `coffee lib/scrape pages`
-  else if process.args[2] is 'pages'
+  else if process.argv[2] is 'pages'
     perScraperLimit = TOTAL_LISTINGS / _.keys(scrapers).length
     for name, scraper of scrapers
       scraper.scrapePages(
@@ -115,9 +121,8 @@ dal.connect =>
         -> process.exit()
       )
   
-  # Scrape ALL THE PAGES with  with `coffee lib/scrape listings`
-  else if process.args[2] is 'listings'
+  # Scrape ALL THE LISTINGS with  with `coffee lib/scrape listings`
+  else if process.argv[2] is 'listings'
     for name, scraper of scrapers
       callback = _.after scrapers.length, -> process.exit()
-      scraper.populateEmptyListings TOTAL_LISTINGS, callback
-    
+      scraper.populateEmptyListings 1000000, callback

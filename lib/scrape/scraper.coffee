@@ -111,7 +111,7 @@ module.exports = class Scraper
         console.log "All listings scraped!"
         callback()
         return
-      console.log "Scraping #{listings.length} listings..."
+      console.log "Scraping #{listings.length} listings from #{@host}..."
       callback = _.after listings.length, callback
       for { url } in listings
         @fetchListing url, listings.length, (err, listing) =>
