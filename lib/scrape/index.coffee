@@ -72,23 +72,23 @@ scrapers =
         pictures: $('.photocolumntitle').nextAll('img').map((i, el) -> $(el).attr 'src').toArray()
       }
 
-# Scrape all the pages of listings and populate all of the empty listings.
-scrapeAll = ->
-  perScraperLimit = TOTAL_LISTINGS_LIMIT / _.keys(scrapers).length
-  for name, scraper of scrapers
-    scraper.scrapePages(
-      scraper.startPage
-      Math.round(perScraperLimit / scraper.listingsPerPage) - 1
-    )
-
 return unless module is require.main
 dal.connect =>
   scraper = scrapers[process.argv[2]]
   
-  # Scrape pages of listings
-  if process.argv[4]
+  # Scrape pages of listings with `coffee lib/scrape streeteasy 0 1`
+  if process.argv[3]
     scraper.scrapePages parseInt(process.argv[3]), parseInt(process.argv[4]), -> process.exit()
   
-  # Scrape listings themself
-  else
+  # Scrape listings themself with `coffee lib/scrape streeteasy`
+  else if process.argv[2]
     scraper.populateEmptyListings -> process.exit()
+  
+  # Scrape ALL THE THINGS with  with `coffee lib/scrape`
+  else
+    perScraperLimit = TOTAL_LISTINGS_LIMIT / _.keys(scrapers).length
+    for name, scraper of scrapers
+      scraper.scrapePages(
+        scraper.startPage
+        Math.round(perScraperLimit / scraper.listingsPerPage) - 1
+      )
