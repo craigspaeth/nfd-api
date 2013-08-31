@@ -108,7 +108,7 @@ BAD_PARAMS =
   query.baths = { $gte: parseInt params.bath_min } if params.bath_min?
   query.rent = { $lte: parseInt params.rent_max } if params.rent_max?
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
-  cursor = @collection.find(query)
+  cursor = @collection.find(_.extend query, BAD_PARAMS)
   cursor.sort(rent: 1) if params.sort is 'rent'
   cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
   cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray (err, listings) =>
@@ -141,13 +141,6 @@ BAD_PARAMS =
 
 @countBad = (callback) ->
   @collection.count BAD_PARAMS, callback
-
-# Removes listings without useful data such as missing location or no pictures.
-# 
-# @param {Function} callback Calls back with (err)
-
-@removeBad = (callback) =>
-  @collection.remove BAD_PARAMS, callback
 
 # Gets the neighborhoods from all of the listings via mongo distinct, and maps them into
 # our hash of neighborhood groups.

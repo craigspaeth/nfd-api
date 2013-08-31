@@ -10,7 +10,6 @@ _.mixin require 'underscore.string'
 
 TOTAL_LISTINGS = 5000
 REQUESTS_PER_MINUTE = 5
-KILL_IN = ((60 / REQUESTS_PER_MINUTE) * (1000 * 60)) * 3
 
 scrapers =
   
@@ -98,10 +97,6 @@ scrapers =
 return unless module is require.main
 dal.connect =>
   scraper = scrapers[process.argv[2]]
-  
-  # No matter the process it shouldn't take longer than 3 times the ammount of time
-  # we predict it will take.
-  setTimeout (-> process.exit()), KILL_IN
   
   # Scrape pages of listings with `coffee lib/scrape streeteasy 0 1`
   if process.argv[4]
