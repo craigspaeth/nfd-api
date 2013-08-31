@@ -22,28 +22,11 @@ module.exports = class Scraper
       @startPage
       @weight
     } = attrs
+    @samePagesCount = 0
     @host = urlLib.parse(@listUrl 0).host
     @zombieOpts = _.extend({ silent: true }, @zombieOpts, { userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
     })
-    
-  # Fetches a page of listing urls.
-  # 
-  # @param {Number} page The page number to scrape
-  # @param {Function} callback Callsback with (err, urls)
-
-  fetchListingUrls: (page, callback) ->
-    console.log "Fetching page #{page} from #{@listUrl(page)}..."
-    Browser.visit @listUrl(page), @zombieOpts, (err, browser) =>
-      $ = jQuery.create(browser.window)
-      $listings = $(@listItemSelector)
-      if $listings?.length is 0
-        console.log "ERROR: Found no listings for on page #{page}: #{@listUrl page}"
-        callback {}
-      else
-        urls = $listings.map((i, el) => 
-          urlLib.resolve "http://" + @host, $(el).attr 'href').toArray()
-        callback null, urls
   
   # Scrapes a single page and saves the empty listings to mongo.
   # 
@@ -55,7 +38,14 @@ module.exports = class Scraper
       ((page - 1) * (60 / @requestsPerMinute)) * 1000
       (page * (60 / @requestsPerMinute)) * 1000
     )
-    setTimeout =>
+    @scrapePageTimeouts ?= []
+    @scrapePageTimeouts.push setTimeout =>
+      if @samePagesCount > 2
+        console.log "These listings are looking the same, done scraping pages!"
+        for timeout in @scrapePageTimeouts
+          clearTimeout(timeout)
+          callback()
+        return
       @fetchListingUrls page, (err, urls) =>
         return callback('fail') if err
         listings = ({ url: url } for url in urls)
@@ -76,6 +66,26 @@ module.exports = class Scraper
     console.log "Scraping #{pages.length} pages..."
     callback = _.after pages.length, callback
     @scrapePage(page, callback) for page in pages
+  
+  # Fetches a page of listing urls.
+  # 
+  # @param {Number} page The page number to scrape
+  # @param {Function} callback Callsback with (err, urls)
+
+  fetchListingUrls: (page, callback) ->
+    console.log "Fetching page #{page} from #{@listUrl(page)}..."
+    Browser.visit @listUrl(page), @zombieOpts, (err, browser) =>
+      $ = jQuery.create(browser.window)
+      $listings = $(@listItemSelector)
+      if $listings?.length is 0
+        console.log "ERROR: Found no listings for on page #{page}: #{@listUrl page}"
+        callback {}
+      else
+        urls = $listings.map((i, el) => 
+          urlLib.resolve "http://" + @host, $(el).attr 'href').toArray()
+        Listings.collection.find(url: $in: urls).count (err, count) => 
+          @samePagesCount++ if count is urls.length
+          callback null, urls
   
   # Scrapes an individual listing and converts it to our data model.
   # 

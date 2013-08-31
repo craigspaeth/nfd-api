@@ -9,7 +9,7 @@ _ = require 'underscore'
 _.mixin require 'underscore.string'
 
 TOTAL_LISTINGS = 5000
-REQUESTS_PER_MINUTE = 10
+REQUESTS_PER_MINUTE = 5
 KILL_IN = ((60 / REQUESTS_PER_MINUTE) * (1000 * 60)) * 3
 
 scrapers =
@@ -18,7 +18,7 @@ scrapers =
     startPage: 1
     requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 10
-    weight: 0.25
+    weight: 1
     listUrl: (page) -> 
       "http://streeteasy.com/nyc/rentals/nyc/rental_type:frbo,brokernofee?" + 
       "page=#{page}&sort_by=listed_desc"
@@ -36,7 +36,7 @@ scrapers =
     startPage: 0
     requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 10
-    weight: 0.25
+    weight: 1
     listUrl: (page) ->
       "http://www.urbanedgeny.com/results?page=#{page}&nh1=90&p[min]=&p[max]=&bd=&ba="
     listItemSelector: '.property-title a'
@@ -54,7 +54,7 @@ scrapers =
     startPage: 0
     requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 200
-    weight: 4
+    weight: 1
     listUrl: (page) ->
       "http://www.nybits.com/search/?_a%21process=y&_rid_=3&_ust_todo_=65733&_xid_=" +
       "aaLx8ms445ZfSq-1377828951&%21%21rmin=&%21%21rmax=&%21%21fee=nofee&%21%21orderby=" + 
@@ -81,7 +81,7 @@ scrapers =
     startPage: 1
     requestsPerMinute: REQUESTS_PER_MINUTE
     listingsPerPage: 28
-    weight: 0.25
+    weight: 1
     listUrl: (page) ->
       "http://apartable.com/apartments?broker_fee=false&city=New+York" + 
       "&page=#{page}&state=New+York&utf8=%E2%9C%93"
@@ -118,11 +118,15 @@ dal.connect =>
       scraper.scrapePages(
         scraper.startPage
         Math.round (perScraperLimit / scraper.listingsPerPage) * scraper.weight
-        -> process.exit()
+        -> 
+          console.log "DONE!"
+          process.exit()
       )
   
   # Scrape ALL THE LISTINGS with  with `coffee lib/scrape listings`
   else if process.argv[2] is 'listings'
     for name, scraper of scrapers
-      callback = _.after scrapers.length, -> process.exit()
+      callback = _.after scrapers.length, ->
+        console.log "DONE!"
+        process.exit()
       scraper.populateEmptyListings 1000000, callback
