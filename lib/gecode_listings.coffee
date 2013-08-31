@@ -14,15 +14,17 @@ dal.connect ->
     console.log "Finished geocoding."
     process.exit()
   Listings.collection
-    .find({ "location.lat": null, "location.name": { $ne: null }, "dateGeocoded": null })
-    .limit(parseInt process.argv[2])
-    .toArray (err, listings) ->
+    .find(_.extend(
+      { "location.lat": null, "dateGeocoded": null }
+      Listings.GOOD_PARAMS
+    )).limit(2500).toArray (err, listings) ->
       console.log "Starting to geocode #{listings.length} listings..."
       callback = _.after listings.length, callback
       for listing in listings
         Listings.geocode listing, (err, listing) -> 
           if err
             console.log(err)
+            process.exit() if err is 'OVER_QUERY_LIMIT'
           else
             console.log "Geocoded '#{listing.location.name}'."
           callback()

@@ -69,7 +69,7 @@ NEIGHBORHOOD_GROUPS =
   'Bronx': [
     'Kingsbridge'
   ]
-GOOD_PARAMS =
+GOOD_PARAMS = @GOOD_PARAMS =
   'location.name': { $ne: null }
   rent: { $ne: 0 }
   pictures: { $nin: [[], null] }
