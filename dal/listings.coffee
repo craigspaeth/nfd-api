@@ -106,8 +106,8 @@ GOOD_PARAMS =
   query.baths = { $gte: parseInt params.bath_min } if params.bath_min?
   query.rent = { $lte: parseInt params.rent_max } if params.rent_max?
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
-  console.log _.extend query, GOOD_PARAMS
-  cursor = @collection.find(_.extend query, GOOD_PARAMS)
+  query[key] = _.extend(query[key] ? {}, val) for key, val of GOOD_PARAMS
+  cursor = @collection.find(query)
   cursor.sort(rent: 1) if params.sort is 'rent'
   cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
   cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray (err, listings) =>
