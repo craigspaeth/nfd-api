@@ -20,11 +20,15 @@ dal.connect ->
     )).limit(2500).toArray (err, listings) ->
       console.log "Starting to geocode #{listings.length} listings..."
       callback = _.after listings.length, callback
-      for listing in listings
-        Listings.geocode listing, (err, listing) -> 
-          if err
-            console.log(err)
-            process.exit() if err is 'OVER_QUERY_LIMIT'
-          else
-            console.log "Geocoded '#{listing.location.name}'."
-          callback()
+      geoCodeListing(i, listing, callback) for listing, i in listings
+
+geoCodeListing = (i, listing, callback) ->
+  setTimeout ->
+    Listings.geocode listing, (err, listing) -> 
+      if err
+        console.log(err)
+        process.exit() if err is 'OVER_QUERY_LIMIT'
+      else
+        console.log "Geocoded '#{listing.location.name}'."
+      callback()
+  , i * 500

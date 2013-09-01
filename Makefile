@@ -13,6 +13,9 @@ scrape:
 	make scrape-pages
 	make scrape-listings
 
+geocode:
+	until coffee lib/scrape pages; do  echo "Crashed with $?">&2; sleep 1; done
+
 test:
 	$(BIN)/mocha $(shell find test -name '*.coffee' -not -path 'test/helpers/*' -not -path 'test/scrapers/*')
 
