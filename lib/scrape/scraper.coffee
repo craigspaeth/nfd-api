@@ -84,7 +84,7 @@ module.exports = class Scraper
         urls = $listings.map((i, el) => 
           urlLib.resolve "http://" + @host, $(el).attr 'href').toArray()
         Listings.collection.find(url: $in: urls).count (err, count) => 
-          @samePagesCount++ if count is urls.length
+          @samePagesCount++ if count is urls.length and urls.length > 0 and count > 0
           callback null, urls
   
   # Scrapes an individual listing and converts it to our data model.
