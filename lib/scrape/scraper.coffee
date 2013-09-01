@@ -50,11 +50,14 @@ module.exports = class Scraper
       @fetchListingUrls page, (err, urls) =>
         return callback('fail') if err
         Listings.collection.find(url: { $in: urls }).count (err, count) => 
-          return @samePagesCount++ if count is urls.length and urls.length > 0 and count > 0
-          listings = ({ url: url } for url in urls)
-          Listings.upsert listings, (err) ->
-            console.log "Saved page #{page}."
+          if count is urls.length and urls.length > 0 and count > 0
+            @samePagesCount++
             callback()
+          else
+            listings = ({ url: url } for url in urls)
+            Listings.upsert listings, (err) ->
+              console.log "Saved page #{page}."
+              callback()
     , delay
   
   # Scrapes a range of pages in parallel and saves the empty listings to mongo.
@@ -105,7 +108,7 @@ module.exports = class Scraper
           else
             console.log "ERROR from #{url}", @$ToListing($)
             @toListingErrorCount++
-            throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 1
+            throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 4
             callback @$ToListing($)
     , delay
     
