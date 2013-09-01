@@ -49,11 +49,12 @@ module.exports = class Scraper
         return
       @fetchListingUrls page, (err, urls) =>
         return callback('fail') if err
-        listings = ({ url: url } for url in urls)
-        console.log urls[0]
-        Listings.upsert listings, (err) ->
-          console.log "Saved page #{page}."
-          callback()
+        Listings.collection.find(url: { $in: urls }).count (err, count) => 
+          return @samePagesCount++ if count is urls.length and urls.length > 0 and count > 0
+          listings = ({ url: url } for url in urls)
+          Listings.upsert listings, (err) ->
+            console.log "Saved page #{page}."
+            callback()
     , delay
   
   # Scrapes a range of pages in parallel and saves the empty listings to mongo.
@@ -84,9 +85,7 @@ module.exports = class Scraper
       else
         urls = $listings.map((i, el) => 
           urlLib.resolve "http://" + @host, $(el).attr 'href').toArray()
-        Listings.collection.find(url: $in: urls).count (err, count) => 
-          @samePagesCount++ if count is urls.length and urls.length > 0 and count > 0
-          callback null, urls
+        callback null, urls
   
   # Scrapes an individual listing and converts it to our data model.
   # 
