@@ -124,7 +124,7 @@ module.exports = class Scraper
       url: { $regex: @host }
     ).limit(limit).toArray (err, listings) =>
       if listings.length is 0
-        console.log "All listings scraped!"
+        console.log "All listings scraped for #{@host}!"
         callback()
         return
       console.log "Scraping #{listings.length} listings from #{@host}..."
