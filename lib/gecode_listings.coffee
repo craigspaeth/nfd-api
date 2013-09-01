@@ -24,11 +24,19 @@ dal.connect ->
 
 geoCodeListing = (i, listing, callback) ->
   setTimeout ->
-    Listings.geocode listing, (err, listing) -> 
+    Listings.geocode listing, (err, li) -> 
       if err
-        console.log(err)
-        process.exit() if err is 'OVER_QUERY_LIMIT'
+        if err is 'OK'
+          listing.dateGeocoded = new Date
+          Listings.upsert listing, callback
+          console.log 'Got OK, saving geocode anyways...'
+        else if err is 'OVER_QUERY_LIMIT'
+          process.exit()
+          console.log "Overy query limit, quitting!"
+        else
+          console.log 'Unkown ERR', err
+          callback()
       else
-        console.log "Geocoded '#{listing.location.name}'."
-      callback()
+        console.log "Geocoded '#{li.location.name}'."
+        callback()
   , i * 500

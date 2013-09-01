@@ -114,7 +114,7 @@ NEIGHBORHOOD_GROUPS =
 GOOD_PARAMS = @GOOD_PARAMS =
   'location.name': { $ne: null }
   rent: { $ne: 0 }
-  pictures: { $nin: [[], null] }
+  # pictures: { $nin: [[], null] }
 
 # Upserts listings into mongo using the listing url as the identifier for unique listings.
 # 
