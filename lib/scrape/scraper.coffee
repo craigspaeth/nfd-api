@@ -51,6 +51,7 @@ module.exports = class Scraper
         return callback('fail') if err
         Listings.collection.find(url: { $in: urls }).count (err, count) => 
           if count is urls.length and urls.length > 0 and count > 0
+            console.log "Page #{page} already scraped."
             @samePagesCount++
             callback()
           else
