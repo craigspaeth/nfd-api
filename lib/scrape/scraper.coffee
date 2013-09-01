@@ -23,6 +23,8 @@ module.exports = class Scraper
       @weight
     } = attrs
     @samePagesCount = 0
+    @toListingErrorCount = 0
+    @scrapePageTimeouts = []
     @host = urlLib.parse(@listUrl 0).host
     @zombieOpts = _.extend({ silent: true }, @zombieOpts, { userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
@@ -38,7 +40,6 @@ module.exports = class Scraper
       ((page - 1) * (60 / @requestsPerMinute)) * 1000
       (page * (60 / @requestsPerMinute)) * 1000
     )
-    @scrapePageTimeouts ?= []
     @scrapePageTimeouts.push setTimeout =>
       if @samePagesCount > 2
         console.log "These listings are looking the same for #{@host}, done scraping pages!"
@@ -104,6 +105,8 @@ module.exports = class Scraper
             callback null, _.extend @$ToListing($), url: url
           else
             console.log "ERROR from #{url}", @$ToListing($)
+            @toListingErrorCount++
+            throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 1
             callback @$ToListing($)
     , delay
     
