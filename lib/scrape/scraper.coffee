@@ -41,7 +41,7 @@ module.exports = class Scraper
     @scrapePageTimeouts ?= []
     @scrapePageTimeouts.push setTimeout =>
       if @samePagesCount > 2
-        console.log "These listings are looking the same, done scraping pages!"
+        console.log "These listings are looking the same for #{@host}, done scraping pages!"
         for timeout in @scrapePageTimeouts
           clearTimeout(timeout)
           callback()
