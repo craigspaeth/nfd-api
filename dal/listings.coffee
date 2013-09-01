@@ -40,6 +40,14 @@ NEIGHBORHOOD_GROUPS =
     'Lincoln Square'
     'UES'
     'UWS'
+    'East Harlem'
+    'Fort George'
+    'Hamilton Heights'
+    'Harlem'
+    'Inwood'
+    'Upper Manhattan'
+    'Washington Heights'
+    'Yorkville'
   ]
   'Midtown': [
     'Chelsea'
@@ -48,26 +56,60 @@ NEIGHBORHOOD_GROUPS =
     'Kips Bay'
     'Midtown'
     'Turtle Bay'
+    'Korea Town'
+    'Sutton Place'
+    'Union Square'
   ]
   'Downtown': [
     'Lower Manhattan'
+    'Alphabet City'
+    'Downtown'
+    'East Village'
+    'Greenwich Village'
+    'Lower East Side'
+    'NoLita'
+    'South Side'
+    'World Trade Center'
   ]
   'South Brooklyn': [
     'Clinton Hill'
     'Crown Heights'
     'Downtown Brooklyn'
     'Sheepshead Bay'
+    'Brooklyn Heights'
+    'East Flatbush'
+    'East New York'
+    'Fort Greene'
+    'Vinegar Hill'
+    'Bay Ridge'
+    'Carroll Gardens'
+    'Flatbush - Ditmas Park'
+    'Greenwood'
+    'Park Slope'
+    'Sunset Park'
   ]
   'North Brooklyn': [
     'Bushwick'
     'Williamsburg'
+    'Bedford-Stuyvesant'
+    'Dumbo'
+    'East Williamsburg'
+    'Greenpoint'
   ]
   'Queens': [
     'LIC'
     'Roosevelt Island'
+    'Astoria'
+    'Hunters Point'
+    'Bayside'
+    'Elmhurst'
+    'Flushing'
+    'Jamaica'
+    'Middle Village'
   ]
   'Bronx': [
     'Kingsbridge'
+    'Mott Haven'
   ]
 GOOD_PARAMS = @GOOD_PARAMS =
   'location.name': { $ne: null }
