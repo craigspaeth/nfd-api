@@ -48,6 +48,7 @@ NEIGHBORHOOD_GROUPS =
     'Upper Manhattan'
     'Washington Heights'
     'Yorkville'
+    'Hudson Heights'
   ]
   'Midtown': [
     'Chelsea'
@@ -59,6 +60,7 @@ NEIGHBORHOOD_GROUPS =
     'Korea Town'
     'Sutton Place'
     'Union Square'
+    'Theater District - Times Square'
   ]
   'Downtown': [
     'Lower Manhattan'
@@ -70,6 +72,9 @@ NEIGHBORHOOD_GROUPS =
     'NoLita'
     'South Side'
     'World Trade Center'
+    'Bowery'
+    'Chinatown'
+    'Little Italy'
   ]
   'South Brooklyn': [
     'Clinton Hill'
@@ -87,6 +92,7 @@ NEIGHBORHOOD_GROUPS =
     'Greenwood'
     'Park Slope'
     'Sunset Park'
+    'Prospect Lefferts Gardens'
   ]
   'North Brooklyn': [
     'Bushwick'
@@ -106,16 +112,26 @@ NEIGHBORHOOD_GROUPS =
     'Flushing'
     'Jamaica'
     'Middle Village'
+    'Corona'
+    'Forest Hills'
+    'Kew Gardens'
+    'Kew Gardens Hills'
   ]
   'Bronx': [
     'Kingsbridge'
     'Mott Haven'
+    'Concourse'
+    'Morris Heights'
+  ]
+  'Staten Island': [
+    'Park Hill'
   ]
 GOOD_PARAMS = @GOOD_PARAMS =
   'location.name': { $ne: null }
   rent: { $ne: 0 }
   # pictures: { $nin: [[], null] }
-
+  url: { $regex: 'apartable|urbanedge|streeteasy' }
+  
 # Upserts listings into mongo using the listing url as the identifier for unique listings.
 # 
 # @param {Object} listings Array or single listing
