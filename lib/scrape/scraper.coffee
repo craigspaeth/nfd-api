@@ -80,7 +80,9 @@ module.exports = class Scraper
 
   fetchListingUrls: (page, callback) ->
     console.log "Fetching page #{page} from #{@listUrl(page)}..."
-    Browser.visit @listUrl(page), @zombieOpts, (err, browser) =>
+    url = @listUrl(page)
+    url = "http://www.gmodules.com/ig/proxy?url=#{url}" if @useProxy
+    Browser.visit url, @zombieOpts, (err, browser) =>
       $ = jQuery.create(browser.window)
       $listings = $(@listItemSelector)
       if $listings?.length is 0
@@ -100,6 +102,7 @@ module.exports = class Scraper
     delay = _.random 0, ((60 / @requestsPerMinute) * 1000) * total
     setTimeout =>
       console.log "Fetching listing from #{url}..."
+      url = "http://www.gmodules.com/ig/proxy?url=#{url}" if @useProxy
       Browser.visit url, @zombieOpts, (err, browser) => 
         browser.wait =>
           $ = jQuery.create(browser.window)
