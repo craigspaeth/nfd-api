@@ -7,15 +7,15 @@ Scraper = require './scraper'
 accounting = require 'accounting'
 _ = require 'underscore'
 _.mixin require 'underscore.string'
+{ SCRAPE_PER_MINUTE } = require '../../config'
 
 TOTAL_LISTINGS = 5000
-REQUESTS_PER_MINUTE = 20
 
 scrapers =
   
   streeteasy: new Scraper
     startPage: 1
-    requestsPerMinute: REQUESTS_PER_MINUTE
+    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 10
     weight: 1
     listUrl: (page) -> 
@@ -33,7 +33,7 @@ scrapers =
       
   urbanedge: new Scraper
     startPage: 0
-    requestsPerMinute: REQUESTS_PER_MINUTE
+    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 10
     weight: 1
     listUrl: (page) ->
@@ -51,7 +51,7 @@ scrapers =
       
   apartable: new Scraper
     startPage: 1
-    requestsPerMinute: REQUESTS_PER_MINUTE
+    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 28
     weight: 1
     listUrl: (page) ->
@@ -69,9 +69,9 @@ scrapers =
 
   nybits: new Scraper
     startPage: 0
-    requestsPerMinute: REQUESTS_PER_MINUTE
+    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 200
-    weight: 1
+    weight: 0.25
     useProxy: true
     listUrl: (page) ->
       "http://www.nybits.com/search/?_a%21process=" + 
@@ -98,9 +98,9 @@ scrapers =
 
   trulia: new Scraper
     startPage: 1
-    requestsPerMinute: REQUESTS_PER_MINUTE
+    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 15
-    weight: 1
+    weight: 0.25
     useProxy: true
     listUrl: (page) -> "http://trulia.com/for_rent/New_York,NY/0_bf/#{page}_p"
     listItemSelector: 'a.primaryLink'
