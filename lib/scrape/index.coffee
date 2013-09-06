@@ -9,7 +9,7 @@ _ = require 'underscore'
 _.mixin require 'underscore.string'
 
 TOTAL_LISTINGS = 5000
-REQUESTS_PER_MINUTE = 5
+REQUESTS_PER_MINUTE = 20
 
 scrapers =
   
