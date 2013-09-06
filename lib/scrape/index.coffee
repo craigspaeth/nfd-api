@@ -67,6 +67,8 @@ scrapers =
         name: $('#map-container h3').text()
       pictures: $('#galleria a').map(-> $(@).attr 'href').toArray()
 
+deprecated =
+
   nybits: new Scraper
     startPage: 0
     requestsPerMinute: REQUESTS_PER_MINUTE
@@ -95,8 +97,6 @@ scrapers =
           name: _.clean(building)
         pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
       }
-
-deprecated =
   
   trulia: new Scraper
     listUrl: (page) -> "http://trulia.com/for_rent/New_York,NY/0_bf/#{page}_p"
