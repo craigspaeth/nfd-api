@@ -6,7 +6,7 @@ cors = require 'cors'
 
 app = module.exports = express()
 
-# Add cors
+# Add CORs
 app.use cors()
 
 # Attach routes to app
