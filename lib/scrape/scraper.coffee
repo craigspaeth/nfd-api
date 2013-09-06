@@ -60,7 +60,7 @@ module.exports = class Scraper
 
   scrapePages: (start, end, callback) =>  
     pages = [start..end]
-    console.log "Scraping #{pages.length} pages..."
+    console.log "Scraping #{pages.length} pages from #{@host}..."
     callback = _.after pages.length, callback
     @scrapePage(page, callback) for page in pages
   
