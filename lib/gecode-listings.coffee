@@ -26,13 +26,13 @@ geoCodeListing = (i, listing, callback) ->
   setTimeout ->
     Listings.geocode listing, (err, li) -> 
       if err
-        if err is 'OK'
+        if err is 'OK' or err is 'ZERO_RESULTS'
           listing.dateGeocoded = new Date
           Listings.upsert listing, callback
-          console.log 'Got OK, saving geocode anyways...'
+          console.log 'Got OK or ZERO_RESULTS, saving dateGeocoded anyways...'
         else if err is 'OVER_QUERY_LIMIT'
+          console.log "Overy query limit, quitting..."
           process.exit()
-          console.log "Overy query limit, quitting!"
         else
           console.log 'Unkown ERR', err
           callback()

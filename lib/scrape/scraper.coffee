@@ -32,7 +32,7 @@ module.exports = class Scraper
       (page * (60 / @requestsPerMinute)) * 1000
     )
     @scrapePageTimeouts.push setTimeout =>
-      if @samePagesCount > 3
+      if @samePagesCount > 2
         console.log "These listings are looking the same for #{@host}, done scraping pages!"
         clearTimeout(timeout) for timeout in @scrapePageTimeouts
         endCallback()
@@ -59,7 +59,7 @@ module.exports = class Scraper
 
   scrapePages: (start, end, callback) =>  
     pages = [start..end]
-    console.log "Scraping #{pages.length} pages from #{@host}..."
+    console.log "Scraping up to #{pages.length} pages from #{@host}..."
     cb = _.after pages.length, callback
     @scrapePage(page, cb, callback) for page in pages
   

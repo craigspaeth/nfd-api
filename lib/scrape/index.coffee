@@ -142,4 +142,4 @@ dal.connect =>
       console.log "DONE!"
       process.exit()
     for name, scraper of scrapers
-      scraper.populateEmptyListings 1000, callback
+      scraper.populateEmptyListings 1, callback
