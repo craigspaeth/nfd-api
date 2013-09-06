@@ -18,6 +18,7 @@ dal.connect ->
       { "location.lat": null, "dateGeocoded": null }
       Listings.GOOD_PARAMS
     )).limit(2500).toArray (err, listings) ->
+      return callback() if listings.length is 0
       console.log "Starting to geocode #{listings.length} listings..."
       callback = _.after listings.length, callback
       geoCodeListing(i, listing, callback) for listing, i in listings
