@@ -67,8 +67,6 @@ scrapers =
         name: $('#map-container h3').text()
       pictures: $('#galleria a').map(-> $(@).attr 'href').toArray()
 
-deprecated =
-
   nybits: new Scraper
     startPage: 0
     requestsPerMinute: REQUESTS_PER_MINUTE
@@ -97,12 +95,15 @@ deprecated =
           name: _.clean(building)
         pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
       }
-  
+
   trulia: new Scraper
+    startPage: 1
+    requestsPerMinute: REQUESTS_PER_MINUTE
+    listingsPerPage: 15
+    weight: 1
+    useProxy: true
     listUrl: (page) -> "http://trulia.com/for_rent/New_York,NY/0_bf/#{page}_p"
     listItemSelector: 'a.primaryLink'
-    zombieOpts: { silent: true }
-    populateLimit: 10
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('[itemprop="price"]').html()

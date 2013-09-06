@@ -12,16 +12,7 @@ urlLib = require 'url'
 module.exports = class Scraper
   
   constructor: (attrs) ->
-    { 
-      @listUrl
-      @listItemSelector
-      @$ToListing
-      @zombieOpts
-      @requestsPerMinute
-      @listingsPerPage
-      @startPage
-      @weight
-    } = attrs
+    @[key] = val for key, val of attrs
     @samePagesCount = 0
     @toListingErrorCount = 0
     @scrapePageTimeouts = []
@@ -101,9 +92,10 @@ module.exports = class Scraper
   fetchListing: (url, total, callback) ->
     delay = _.random 0, ((60 / @requestsPerMinute) * 1000) * total
     setTimeout =>
-      console.log "Fetching listing from #{url}..."
-      url = "http://www.gmodules.com/ig/proxy?url=#{url}" if @useProxy
-      Browser.visit url, @zombieOpts, (err, browser) => 
+      visitUrl = url
+      visitUrl = "http://www.gmodules.com/ig/proxy?url=#{url}" if @useProxy
+      console.log "Fetching listing from #{visitUrl}..."
+      Browser.visit visitUrl, @zombieOpts, (err, browser) => 
         browser.wait =>
           $ = jQuery.create(browser.window)
           if _.isObject @$ToListing($)

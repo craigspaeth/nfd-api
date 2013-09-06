@@ -130,7 +130,6 @@ GOOD_PARAMS = @GOOD_PARAMS =
   'location.name': { $ne: null }
   rent: { $ne: 0 }
   # pictures: { $nin: [[], null] }
-  url: { $regex: 'apartable|urbanedge|streeteasy' }
   
 # Upserts listings into mongo using the listing url as the identifier for unique listings.
 # 
