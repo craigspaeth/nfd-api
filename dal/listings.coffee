@@ -194,12 +194,12 @@ GOOD_PARAMS = @GOOD_PARAMS =
 
 # Says the number of bad listings there are.
 # 
-# @param {Function} callback Calls back with (err, count)
+# @param {Function} callback Calls back with (err, badCount, totalCount)
 
 @countBad = (callback) ->
   @collection.count (err, count) =>
-    @collection.count GOOD_PARAMS, (err, goodCount) ->
-      callback err, count - goodCount
+    @collection.count GOOD_PARAMS, (err, goodCount) =>
+      callback err, count - goodCount, count
 
 # Gets the neighborhoods from all of the listings via mongo distinct, and maps them into
 # our hash of neighborhood groups.

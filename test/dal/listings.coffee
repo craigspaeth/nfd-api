@@ -175,3 +175,13 @@ describe 'listings', ->
         groups['South Brooklyn'][0].should.equal 'Clinton Hill'
         groups['Uptown'][0].should.equal 'UES'
         done()
+        
+  describe '#countBad', ->
+    
+    it 'counts the number of bad listings', (done) ->
+      listings.countBad (err, badCount, total) ->
+        badCount.should.equal 50
+        total.should.equal 100
+        done()
+      listings.collection.count.args[0][0] null, 100
+      listings.collection.count.args[1][1] null, 50

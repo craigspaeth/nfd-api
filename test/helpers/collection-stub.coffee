@@ -1,6 +1,6 @@
 sinon = require 'sinon'
 
-METHODS = ['update', 'find', 'skip', 'limit', 'toArray', 'update', 'distinct', 'sort']
+METHODS = ['update', 'find', 'skip', 'limit', 'toArray', 'update', 'distinct', 'sort', 'count']
 
 module.exports = ->
   collectionStub = {}
