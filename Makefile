@@ -12,7 +12,7 @@ scrape-listings:
 scrape:
 	make scrape-pages
 	make scrape-listings
-	coffee lib/gecode_listings.coffee
+	coffee lib/gecode-listings.coffee
 
 geocode:
 	until coffee lib/scrape pages; do  echo "Crashed with $?">&2; sleep 1; done

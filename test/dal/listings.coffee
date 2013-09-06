@@ -1,6 +1,6 @@
 listings = require '../../dal/listings'
 sinon = require 'sinon'
-collectionStub = require '../helpers/collection_stub'
+collectionStub = require '../helpers/collection-stub'
 _ = require 'underscore'
 
 describe 'listings', ->
