@@ -1,4 +1,3 @@
-nfd_server
-==========
+# No Fee Digs Server
 
-Scraper and API for No Fee Digs
+Scraper and API for No Fee Digs.

@@ -12,12 +12,12 @@
 		"underscore.string": "*",
 		"mongodb": "*",
 		"validator": "*",
-		"cors": "*"
+		"cors": "*",
+		"googlemaps": "*"
   },
 	"devDependencies": {
 		"jquery": "*",
 		"zombie": "*",
-		"googlemaps": "*",
 		"mocha": "*",
 		"should": "*",
 		"sinon": "*",
