@@ -9,8 +9,6 @@ _ = require 'underscore'
 _.mixin require 'underscore.string'
 { SCRAPE_PER_MINUTE } = require '../../config'
 
-TOTAL_LISTINGS = 5000
-
 scrapers =
   
   streeteasy: new Scraper
@@ -71,7 +69,7 @@ scrapers =
     startPage: 0
     requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 200
-    weight: 0.25
+    weight: 0.5
     useProxy: true
     listUrl: (page) ->
       "http://www.nybits.com/search/?_a%21process=" + 
@@ -100,7 +98,7 @@ scrapers =
     startPage: 1
     requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 15
-    weight: 0.25
+    weight: 0.5
     useProxy: true
     listUrl: (page) -> "http://trulia.com/for_rent/New_York,NY/0_bf/#{page}_p"
     listItemSelector: 'a.primaryLink'
@@ -128,20 +126,20 @@ dal.connect =>
   
   # Scrape ALL THE PAGES with  with `coffee lib/scrape pages`
   else if process.argv[2] is 'pages'
-    perScraperLimit = TOTAL_LISTINGS / _.keys(scrapers).length
+    callback = _.after _.keys(scrapers).length, -> 
+      console.log "DONE SCRAPING PAGES FOR ALL SOURCES!"
+      process.exit()
     for name, scraper of scrapers
       scraper.scrapePages(
         scraper.startPage
-        Math.round (perScraperLimit / scraper.listingsPerPage) * scraper.weight
-        -> 
-          console.log "DONE!"
-          process.exit()
+        Math.round scraper.weight * (1000 / scraper.listingsPerPage)
+        callback
       )
   
   # Scrape ALL THE LISTINGS with  with `coffee lib/scrape listings`
   else if process.argv[2] is 'listings'
+    callback = _.after _.keys(scrapers).length, ->
+      console.log "DONE!"
+      process.exit()
     for name, scraper of scrapers
-      callback = _.after scrapers.length, ->
-        console.log "DONE!"
-        process.exit()
-      scraper.populateEmptyListings 1000000, callback
+      scraper.populateEmptyListings 1000, callback

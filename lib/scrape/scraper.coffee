@@ -26,17 +26,16 @@ module.exports = class Scraper
   # @param {Number} page
   # @param {Function} callback Callsback with (err)
 
-  scrapePage: (page, callback) =>
+  scrapePage: (page, callback, endCallback) =>
     delay = _.random(
       ((page - 1) * (60 / @requestsPerMinute)) * 1000
       (page * (60 / @requestsPerMinute)) * 1000
     )
     @scrapePageTimeouts.push setTimeout =>
-      if @samePagesCount > 2
+      if @samePagesCount > 3
         console.log "These listings are looking the same for #{@host}, done scraping pages!"
-        for timeout in @scrapePageTimeouts
-          clearTimeout(timeout)
-          callback()
+        clearTimeout(timeout) for timeout in @scrapePageTimeouts
+        endCallback()
         return
       @fetchListingUrls page, (err, urls) =>
         return callback('fail') if err
@@ -61,8 +60,8 @@ module.exports = class Scraper
   scrapePages: (start, end, callback) =>  
     pages = [start..end]
     console.log "Scraping #{pages.length} pages from #{@host}..."
-    callback = _.after pages.length, callback
-    @scrapePage(page, callback) for page in pages
+    cb = _.after pages.length, callback
+    @scrapePage(page, cb, callback) for page in pages
   
   # Fetches a page of listing urls.
   # 
