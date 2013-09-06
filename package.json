@@ -13,14 +13,14 @@
 		"mongodb": "*",
 		"validator": "*",
 		"cors": "*",
-		"googlemaps": "*"
-  },
-	"devDependencies": {
+		"googlemaps": "*",
 		"jquery": "*",
 		"zombie": "*",
+		"accounting": "*"
+  },
+	"devDependencies": {
 		"mocha": "*",
 		"should": "*",
-		"sinon": "*",
-		"accounting": "*"
+		"sinon": "*"
 	}
 }
