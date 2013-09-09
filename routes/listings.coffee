@@ -7,9 +7,9 @@ module.exports =
   Retrieves all listings.
   
   Query params:
-  *bed_min*: Filters by minimum number of bedrooms.
-  *bath_min*: Filters by minimum number of bathrooms.
-  *rent_max*: Filters by a maximum rent.
+  *bed-min*: Filters by minimum number of bedrooms.
+  *bath-min*: Filters by minimum number of bathrooms.
+  *rent-max*: Filters by a maximum rent.
   *neighborhoods*: Filters by an array of neighborhood names e.g. ['Astoria', 'UWS'].
   See /neighborhoods for a list of all available neighborhoods.
   *sort*: Sorts the listings by various terms. These terms include:

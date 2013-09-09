@@ -11,15 +11,15 @@ describe 'listings', ->
   describe "#find", ->
     
     it 'limits by beds', ->
-      listings.find(bed_min: 2)
+      listings.find('bed-min': 2)
       listings.collection.find.args[0][0].beds["$gte"].should.equal 2
     
     it 'limits by baths', ->
-      listings.find(bath_min: 2)
+      listings.find('bath-min': 2)
       listings.collection.find.args[0][0].baths["$gte"].should.equal 2
     
     it 'limits by rent', ->
-      listings.find(rent_max: 2000)
+      listings.find('rent-max': 2000)
       listings.collection.find.args[0][0].rent["$lte"].should.equal 2000
       
     it 'limits by size', ->
@@ -46,6 +46,10 @@ describe 'listings', ->
       listings.collection.sort.args[0][0].beds.should.equal -1
       listings.collection.sort.args[0][0].baths.should.equal -1
     
+    it 'sorts by newest listings', ->
+      listings.find(sort: 'newest')
+      listings.collection.sort.args[0][0].dateScraped.should.equal -1
+  
   describe '#upsert', ->
     
     it 'upserts restricting to urls', ->

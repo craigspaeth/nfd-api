@@ -34,98 +34,7 @@ _ = require 'underscore'
 @gm = require 'googlemaps'
 
 DEFAULT_PAGE_SIZE = 50
-NEIGHBORHOOD_GROUPS =
-  'Uptown': [
-    'Lenox Hill'
-    'Lincoln Square'
-    'UES'
-    'UWS'
-    'East Harlem'
-    'Fort George'
-    'Hamilton Heights'
-    'Harlem'
-    'Inwood'
-    'Upper Manhattan'
-    'Washington Heights'
-    'Yorkville'
-    'Hudson Heights'
-  ]
-  'Midtown': [
-    'Chelsea'
-    'Gramercy Park'
-    "Hell's Kitchen"
-    'Kips Bay'
-    'Midtown'
-    'Turtle Bay'
-    'Korea Town'
-    'Sutton Place'
-    'Union Square'
-    'Theater District - Times Square'
-  ]
-  'Downtown': [
-    'Lower Manhattan'
-    'Alphabet City'
-    'Downtown'
-    'East Village'
-    'Greenwich Village'
-    'Lower East Side'
-    'NoLita'
-    'South Side'
-    'World Trade Center'
-    'Bowery'
-    'Chinatown'
-    'Little Italy'
-  ]
-  'South Brooklyn': [
-    'Clinton Hill'
-    'Crown Heights'
-    'Downtown Brooklyn'
-    'Sheepshead Bay'
-    'Brooklyn Heights'
-    'East Flatbush'
-    'East New York'
-    'Fort Greene'
-    'Vinegar Hill'
-    'Bay Ridge'
-    'Carroll Gardens'
-    'Flatbush - Ditmas Park'
-    'Greenwood'
-    'Park Slope'
-    'Sunset Park'
-    'Prospect Lefferts Gardens'
-  ]
-  'North Brooklyn': [
-    'Bushwick'
-    'Williamsburg'
-    'Bedford-Stuyvesant'
-    'Dumbo'
-    'East Williamsburg'
-    'Greenpoint'
-  ]
-  'Queens': [
-    'LIC'
-    'Roosevelt Island'
-    'Astoria'
-    'Hunters Point'
-    'Bayside'
-    'Elmhurst'
-    'Flushing'
-    'Jamaica'
-    'Middle Village'
-    'Corona'
-    'Forest Hills'
-    'Kew Gardens'
-    'Kew Gardens Hills'
-  ]
-  'Bronx': [
-    'Kingsbridge'
-    'Mott Haven'
-    'Concourse'
-    'Morris Heights'
-  ]
-  'Staten Island': [
-    'Park Hill'
-  ]
+NEIGHBORHOOD_GROUPS = require '../lib/neighborhood-groups'
 GOOD_PARAMS = @GOOD_PARAMS =
   'location.name': { $ne: null }
   rent: { $ne: 0 }
@@ -159,14 +68,15 @@ GOOD_PARAMS = @GOOD_PARAMS =
 @find = (params, callback) =>
   pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
   query = {}
-  query.beds = { $gte: parseInt params.bed_min } if params.bed_min?
-  query.baths = { $gte: parseInt params.bath_min } if params.bath_min?
-  query.rent = { $lte: parseInt params.rent_max } if params.rent_max?
+  query.beds = { $gte: parseInt params['bed-min'] } if params['bed-min']?
+  query.baths = { $gte: parseInt params['bath-min'] } if params['bath-min']?
+  query.rent = { $lte: parseInt params['rent-max'] } if params['rent-max']?
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
   query[key] = _.extend(query[key] ? {}, val) for key, val of GOOD_PARAMS
   cursor = @collection.find(query)
   cursor.sort(rent: 1) if params.sort is 'rent'
   cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
+  cursor.sort(dateScraped: -1) if params.sort is 'newest'
   cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray (err, listings) =>
     callback err, @toJSON listings
 
