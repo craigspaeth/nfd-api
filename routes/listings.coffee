@@ -1,10 +1,19 @@
-dal = require '../dal'
+Listings = require '../dal/listings'
+_ = require 'underscore'
 
 module.exports =
 
 'GET /listings': 
   desc: """
-  Retrieves all listings.
+  Retrieves all listings, returns listings as a hash with data on the whole set and the
+  listing data itself inside `results`.
+  
+  e.g.
+  
+  {
+    count: 100,
+    results: []
+  }
   
   Query params:
   *bed-min*: Filters by minimum number of bedrooms.
@@ -19,14 +28,22 @@ module.exports =
   *page*: Page of results to fetch.
   """
   cb: (req, res) ->
-    dal.listings.find req.query, (err, listings) ->
+    listings = []
+    count = 0
+    callback = _.after 2, ->
+      res.send { count: count, results: listings }
+    Listings.collection.count (err, _count) ->
+      count = _count
+      callback()
+    Listings.find req.query, (err, _listings) ->
       return res.send 500 if err
-      res.send listings
+      listings = _listings
+      callback()
       
 'GET /listings/:id':
   desc: """
   Retrieves a listing by id.
   """
   cb: (req, res) ->
-    dal.listings.findOne req.params.id, (err, doc) ->
-      res.send dal.listings.toJSON doc
+    Listings.findOne req.params.id, (err, doc) ->
+      res.send Listings.toJSON doc

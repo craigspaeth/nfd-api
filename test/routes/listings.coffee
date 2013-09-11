@@ -1,36 +1,34 @@
 sinon = require 'sinon'
-dal = require '../../dal'
-dal.listings = require '../../dal/listings'
+Listings = require '../../dal/listings'
 routes = require '../../routes/listings'
+collectionStub = require '../helpers/collection-stub'
 
 describe 'listings routes', ->
   
   describe 'GET /listings', ->
     
     beforeEach ->
-      sinon.stub dal.listings, 'find'
-      dal.listings.find.callsArgWith 1, null, [{ name: 'foo' }]
-    
-    afterEach ->
-      dal.listings.find.restore()
+      Listings.collection = collectionStub()
     
     it 'returns listings', ->
+      Listings.find = sinon.stub()
+      Listings.find.callsArgWith 1, null, [{ foo: 'bar' }, { bar: 'foo' }]
+      Listings.collection.count.callsArgWith 0, null, 10
       routes['GET /listings'].cb { query: { foo: 'bar' } }, { send: sendStub = sinon.stub() }
-      dal.listings.find.args[0][0].foo.should.equal 'bar'
-      listings = sendStub.args[0][0]
-      listings[0].name.should.equal 'foo'
+      sendStub.args[0][0].count.should.equal 10
+      sendStub.args[0][0].results[0].foo.should.equal 'bar' 
       
   describe 'GET /listings/:id', ->
     
     beforeEach ->
-      sinon.stub dal.listings, 'findOne'
-      dal.listings.findOne.callsArgWith 1, null, { name: 'foo' }
+      sinon.stub Listings, 'findOne'
+      Listings.findOne.callsArgWith 1, null, { name: 'foo' }
     
     afterEach ->
-      dal.listings.findOne.restore()
+      Listings.findOne.restore()
     
     it 'returns one listing', ->
       routes['GET /listings/:id'].cb { params: { id: 'bar' } }, { send: sendStub = sinon.stub() }
-      dal.listings.findOne.args[0][0].should.equal 'bar'
+      Listings.findOne.args[0][0].should.equal 'bar'
       listing = sendStub.args[0][0]
       listing.name.should.equal 'foo'
