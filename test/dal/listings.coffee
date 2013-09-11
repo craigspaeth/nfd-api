@@ -50,6 +50,12 @@ describe 'listings', ->
       listings.find(sort: 'newest')
       listings.collection.sort.args[0][0].dateScraped.should.equal -1
   
+  describe '#count', ->
+    
+    it 'counts listings by params', ->
+      listings.count('bed-min': 2)
+      listings.collection.count.args[0][0].beds["$gte"].should.equal 2
+  
   describe '#upsert', ->
     
     it 'upserts restricting to urls', ->
