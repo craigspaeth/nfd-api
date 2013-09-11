@@ -16,7 +16,8 @@
 		"googlemaps": "*",
 		"jquery": "*",
 		"zombie": "*",
-		"accounting": "*"
+		"accounting": "*",
+		"async": "*"
   },
 	"devDependencies": {
 		"mocha": "*",

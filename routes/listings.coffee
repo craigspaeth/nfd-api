@@ -1,5 +1,5 @@
 Listings = require '../dal/listings'
-_ = require 'underscore'
+async = require 'async'
 
 module.exports =
 
@@ -28,17 +28,13 @@ module.exports =
   *page*: Page of results to fetch.
   """
   cb: (req, res) ->
-    listings = []
-    count = 0
-    callback = _.after 2, ->
-      res.send { count: count, results: listings }
-    Listings.collection.count (err, _count) ->
-      count = _count
-      callback()
-    Listings.find req.query, (err, _listings) ->
+    async.parallel {
+      total: (cb) -> Listings.collection.count(cb)
+      count: (cb) -> Listings.count(req.query, cb)
+      results: (cb) -> Listings.find(req.query, cb)
+    }, (err, results) ->
       return res.send 500 if err
-      listings = _listings
-      callback()
+      res.send results
       
 'GET /listings/:id':
   desc: """

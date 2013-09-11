@@ -67,18 +67,35 @@ GOOD_PARAMS = @GOOD_PARAMS =
 
 @find = (params, callback) =>
   pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
+  cursor = @collection.find(@buildQuery params)
+  cursor.sort(rent: 1) if params.sort is 'rent'
+  cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
+  cursor.sort(dateScraped: -1) if params.sort is 'newest'
+  cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray (err, listings) =>
+    callback err, @toJSON listings
+    
+# A `count` operation that uses the params used by `find`. Pass in params that would be
+# sent via query params and it'll translate that into the right mongo queries.
+# 
+# @param {Object} params Query params see the API documentation.
+# @param {Function} callback Calls back with (err, count)
+
+@count = (params, callback) =>
+  @collection.count(@buildQuery(params), callback)
+
+# Converts query params into a mongo query for searching listings.
+# 
+# @param {Object} params Query params
+# @return Returns mongo query object
+
+@buildQuery = (params) ->
   query = {}
   query.beds = { $gte: parseInt params['bed-min'] } if params['bed-min']?
   query.baths = { $gte: parseInt params['bath-min'] } if params['bath-min']?
   query.rent = { $lte: parseInt params['rent-max'] } if params['rent-max']?
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
   query[key] = _.extend(query[key] ? {}, val) for key, val of GOOD_PARAMS
-  cursor = @collection.find(query)
-  cursor.sort(rent: 1) if params.sort is 'rent'
-  cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
-  cursor.sort(dateScraped: -1) if params.sort is 'newest'
-  cursor.skip(pageSize * params.page or 0).limit(pageSize).toArray (err, listings) =>
-    callback err, @toJSON listings
+  query
 
 # Uses google maps to populate location data and geocode a listing.
 # 

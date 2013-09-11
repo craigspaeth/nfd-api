@@ -13,9 +13,11 @@ describe 'listings routes', ->
     it 'returns listings', ->
       Listings.find = sinon.stub()
       Listings.find.callsArgWith 1, null, [{ foo: 'bar' }, { bar: 'foo' }]
-      Listings.collection.count.callsArgWith 0, null, 10
       routes['GET /listings'].cb { query: { foo: 'bar' } }, { send: sendStub = sinon.stub() }
-      sendStub.args[0][0].count.should.equal 10
+      Listings.collection.count.args[0][0] null, 10
+      Listings.collection.count.args[1][1] null, 5
+      sendStub.args[0][0].count.should.equal 5
+      sendStub.args[0][0].total.should.equal 10
       sendStub.args[0][0].results[0].foo.should.equal 'bar' 
       
   describe 'GET /listings/:id', ->
