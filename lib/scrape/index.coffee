@@ -117,7 +117,7 @@ scrapers =
     requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 22
     weight: 1
-    listUrl: (page) -> "http://www.renthop.com/search?page=#{page}"
+    listUrl: (page) -> "http://www.renthop.com/search?features%5B%5D=No+Fee&page=#{page}"
     listItemSelector: '#resultsList .pictures > a'
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
