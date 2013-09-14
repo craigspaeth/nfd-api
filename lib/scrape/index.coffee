@@ -23,7 +23,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('h1 .price').text()
-      beds: parseFloat($('.data').text().match(/[\.\d]* bed/)) or null
+      beds: parseFloat(if $('.data').text().match(/studio/i) then 0 \
+                       else $('.data').text().match(/[\.\d]* bed/)) or null
       baths: parseFloat($('.data').text().match(/[\.\d]* bath/)) or null
       location: 
         name: $('h1 span').text()
@@ -40,7 +41,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('#listing-overview > div:first-child').text()
-      beds: parseFloat($('#listing-overview').text().match(/[\.\d]* bed/i)) or null
+      beds: parseFloat(if $('#listing-overview').text().match(/studio/i) then 0 \
+                       else $('#listing-overview').text().match(/[\.\d]* bed/)) or null
       baths: parseFloat($('#listing-overview').text().match(/[\.\d]* bath/i)) or null
       location: 
         name: _.clean($('.address-block').text())
@@ -59,7 +61,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('.price').text()
-      beds: parseFloat($('.bedrooms').text().match(/[\.\d]* bed/i)) or null
+      beds: parseFloat(if $('.bedrooms').text().match(/studio/i) then 0 \
+                       else $('.bedrooms').text().match(/[\.\d]* bed/)) or null
       baths: parseFloat($('.bathrooms').text().match(/[\.\d]* bath/i)) or null
       location: 
         name: $('#map-container h3').text()
@@ -87,7 +90,7 @@ scrapers =
                  $(@).find("td:eq(0)").text().match /Building/).find("td:eq(1)").text()
       {
         rent: accounting.unformat(rent)
-        beds: parseFloat(if layout.match /studio/i then 1 else layout) or null
+        beds: parseFloat(if layout.match /studio/i then 0 else layout) or null
         baths: null
         location:
           name: _.clean(building)
@@ -105,7 +108,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('[itemprop="price"]').html()
-      beds: parseFloat($('.listBulleted').html().match(/[\.\d]* bed/i))
+      beds: parseFloat(if $('.listBulleted').text().match(/studio/i) then 0 \
+                       else $('.listBulleted').text().match(/[\.\d]* bed/)) or null
       baths: parseFloat($('.listBulleted').html().match(/[\.\d]* bath/i))
       location:
         name: $('[itemprop="address"]').html()
@@ -122,7 +126,8 @@ scrapers =
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('.listingHeading span:first strong').html()
-      beds: parseFloat($('.listingHeading').html().match(/[\.\d]* bed/i))
+      beds: parseFloat(if $('.listingHeading').text().match(/studio/i) then 0 \
+                       else $('.listingHeading').text().match(/[\.\d]* bed/)) or null
       baths: parseFloat($('.listingHeading').html().match(/[\.\d]* bath/i))
       location:
         name: $('.listingHeading h1').text().match(/at(.*) for/)[1]
