@@ -9,8 +9,8 @@ _ = require 'underscore'
 _.mixin require 'underscore.string'
 { SCRAPE_PER_MINUTE } = require '../../config'
 
-parseBed = (text) ->
-  parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/)
+parseBeds = (text) ->
+  parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/i)
   if _.isNaN(parsed) then null else parsed
   
 scrapers =
