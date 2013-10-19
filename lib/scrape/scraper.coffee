@@ -9,6 +9,20 @@ _ = require 'underscore'
 Browser = require 'zombie'
 urlLib = require 'url'
 
+inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
+  Browser.visit proxyUrl, { runScripts: false }, (err, browser) =>
+    return cb '' if err
+    browser.wait -> browser.fill(inputSelector, url).pressButton buttonSelector, ->
+      browser.wait -> cb browser.location.href
+
+PROXIES = [
+  # (url, cb) -> cb "http://translate.google.com/translate?sl=ja&tl=en&u=#{url}"
+  # (url, cb) -> cb "http://proxy2974.my-addr.org/myaddrproxy.php/http/#{url}"
+  (url, cb) -> inputProxy 'http://www.rxproxy.com/', '#address_box', '#go', url, cb
+  # (url, cb) -> inputProxy 'http://www.surfert.nl/', '#address_box', '#go', url, cb
+  # (url, cb) -> inputProxy 'http://websiteproxy.co.uk/', 'input[name=url]', '.bigbtn', url, cb
+]
+
 module.exports = class Scraper
   
   constructor: (attrs) ->
@@ -21,6 +35,10 @@ module.exports = class Scraper
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
     })
   
+  proxiedUrl: (url, callback) ->
+    return url unless @useProxy
+    _.sample(PROXIES)(url, callback)
+    
   # Scrapes a single page and saves the empty listings to mongo.
   # 
   # @param {Number} page
@@ -70,18 +88,17 @@ module.exports = class Scraper
 
   fetchListingUrls: (page, callback) ->
     console.log "Fetching page #{page} from #{@listUrl(page)}..."
-    url = @listUrl(page)
-    url = "http://www.gmodules.com/ig/proxy?url=#{url}" if @useProxy
-    Browser.visit url, @zombieOpts, (err, browser) =>
-      $ = jQuery.create(browser.window)
-      $listings = $(@listItemSelector)
-      if $listings?.length is 0
-        console.log "ERROR: Found no listings for on page #{page}: #{@listUrl page}"
-        callback {}
-      else
-        urls = $listings.map((i, el) => 
-          urlLib.resolve "http://" + @host, $(el).attr 'href').toArray()
-        callback null, urls
+    @proxiedUrl @listUrl(page), (url) =>
+      Browser.visit url, @zombieOpts, (err, browser) =>
+        $ = jQuery.create(browser.window)
+        $listings = $(@listItemSelector)
+        if $listings?.length is 0
+          console.log "ERROR: Found no listings for on page #{page}: #{url}"
+          callback {}
+        else
+          urls = $listings.map((i, el) => 
+            urlLib.resolve "http://" + @host, $(el).attr 'href').toArray()
+          callback null, urls
   
   # Scrapes an individual listing and converts it to our data model.
   # 
@@ -91,20 +108,19 @@ module.exports = class Scraper
   fetchListing: (url, total, callback) ->
     delay = _.random 0, ((60 / @requestsPerMinute) * 1000) * total
     setTimeout =>
-      visitUrl = url
-      visitUrl = "http://www.gmodules.com/ig/proxy?url=#{url}" if @useProxy
-      console.log "Fetching listing from #{visitUrl}..."
-      Browser.visit visitUrl, @zombieOpts, (err, browser) => 
-        browser.wait =>
-          $ = jQuery.create(browser.window)
-          if _.isObject @$ToListing($)
-            console.log "Saved listing from #{url}.", @$ToListing($)
-            callback null, _.extend @$ToListing($), url: url
-          else
-            console.log "ERROR from #{url}", @$ToListing($)
-            @toListingErrorCount++
-            throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 4
-            callback @$ToListing($)
+      @proxiedUrl @listUrl(page), (visitUrl) =>
+        console.log "Fetching listing from #{visitUrl}..."
+        Browser.visit visitUrl, @zombieOpts, (err, browser) => 
+          browser.wait =>
+            $ = jQuery.create(browser.window)
+            if _.isObject @$ToListing($)
+              console.log "Saved listing from #{url}.", @$ToListing($)
+              callback null, _.extend @$ToListing($), url: url
+            else
+              console.log "ERROR from #{url}", @$ToListing($)
+              @toListingErrorCount++
+              throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 4
+              callback @$ToListing($)
     , delay
     
   # Goes through listings without `dateScraped` and populates them by scraping

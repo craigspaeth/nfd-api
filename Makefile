@@ -4,10 +4,10 @@ s:
 	$(BIN)/coffee index.coffee
 
 scrape-pages:
-	until coffee lib/scrape pages; do  echo "Crashed with $?">&2; sleep 1; done
+	until $(BIN)/coffee lib/scrape pages; do  echo "Crashed with $?">&2; sleep 1; done
 
 scrape-listings:
-	until coffee lib/scrape listings; do  echo "Crashed with $?">&2; sleep 1; done
+	until $(BIN)/coffee lib/scrape listings; do  echo "Crashed with $?">&2; sleep 1; done
 
 scrape:
 	make scrape-pages
@@ -15,7 +15,7 @@ scrape:
 	make geocode
 
 geocode:
-	coffee lib/gecode-listings.coffee
+	$(BIN)/coffee lib/gecode-listings.coffee
 
 test:
 	$(BIN)/mocha $(shell find test -name '*.coffee' -not -path 'test/helpers/*' -not -path 'test/scrapers/*')

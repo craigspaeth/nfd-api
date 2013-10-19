@@ -69,35 +69,6 @@ scrapers =
         name: $('#map-container h3').text()
       pictures: $('#galleria a').map(-> $(@).attr 'href').toArray()
 
-  nybits: new Scraper
-    startPage: 0
-    requestsPerMinute: SCRAPE_PER_MINUTE
-    listingsPerPage: 200
-    weight: 0.5
-    useProxy: true
-    listUrl: (page) ->
-      "http://www.nybits.com/search/?_a%21process=" + 
-      "y&_rid_=3&_ust_todo_=65733&_xid_=" +
-      "aaLx8ms445ZfSq-1377828951&%21%21rmin=&%21%21rmax=&%21%21fee=nofee&%21%21orderby=" + 
-      "dateposted&submit=+SHOW+RENTAL+APARTMENTS+&!!_magic%3APrefix!_search_start%3D#{page * 200}="
-    listItemSelector: '[colspan="3"] a'
-    $ToListing: ($) ->
-      return $('html').html() unless $('html').html().length > 30
-      rent = $("#capsuletable tr").filter( -> 
-             $(@).find("td:eq(0)").text().match /Rent/).find("td:eq(1)").text()
-      layout = $("#capsuletable tr").filter( -> 
-               $(@).find("td:eq(0)").text().match /Layout/).find("td:eq(1)").text()
-      building = $("#capsuletable tr").filter( -> 
-                 $(@).find("td:eq(0)").text().match /Building/).find("td:eq(1)").text()
-      {
-        rent: accounting.unformat(rent)
-        beds: parseFloat(if layout.match /studio/i then 0 else layout) or null
-        baths: null
-        location:
-          name: _.clean(building)
-        pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
-      }
-
   trulia: new Scraper
     startPage: 1
     requestsPerMinute: SCRAPE_PER_MINUTE
@@ -131,6 +102,37 @@ scrapers =
       location:
         name: $('.listingHeading h1').text().match(/at(.*) for/)[1]
       pictures: $('#photoSlider a').map(-> $(@).attr 'href').toArray()
+
+  nybits: new Scraper
+    startPage: 0
+    requestsPerMinute: SCRAPE_PER_MINUTE
+    listingsPerPage: 200
+    weight: 0.5
+    useProxy: true
+    zombieOpts: { runScripts: false }
+    listUrl: (page) ->
+      "http://www.nybits.com/search/?_a%21process=" + 
+      "y&_rid_=3&_ust_todo_=65733&_xid_=" +
+      "aaLx8ms445ZfSq-1377828951&%21%21rmin=&%21%21rmax=&%21%21fee=nofee&%21%21orderby=" + 
+      "dateposted&submit=+SHOW+RENTAL+APARTMENTS+&!!_magic%3APrefix!_search_start%3D#{page * 200}="
+    listItemSelector: '[colspan="3"] a'
+    $ToListing: ($) ->
+      return $('html').html() unless $('html').html().length > 30
+      rent = $("#capsuletable tr").filter( -> 
+             $(@).find("td:eq(0)").text().match /Rent/).find("td:eq(1)").text()
+      layout = $("#capsuletable tr").filter( -> 
+               $(@).find("td:eq(0)").text().match /Layout/).find("td:eq(1)").text()
+      building = $("#capsuletable tr").filter( -> 
+                 $(@).find("td:eq(0)").text().match /Building/).find("td:eq(1)").text()
+      {
+        rent: accounting.unformat(rent)
+        beds: parseFloat(if layout.match /studio/i then 0 else layout) or null
+        baths: null
+        location:
+          name: _.clean(building)
+        pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
+      }
+
 
 return unless module is require.main
 dal.connect =>
