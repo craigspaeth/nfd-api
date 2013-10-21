@@ -33,7 +33,12 @@ module.exports = class Scraper
     @toListingErrorCount = 0
     @scrapePageTimeouts = []
     @host = urlLib.parse(@listUrl 0).host
-    @zombieOpts = _.extend({ silent: true, runScripts: false }, @zombieOpts, { userAgent:
+    @zombieOpts = _.extend({
+      silent: true
+      runScripts: false
+      waitFor: 2000
+      maxWait: 15000
+    }, @zombieOpts, { userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
     })
   
@@ -122,7 +127,7 @@ module.exports = class Scraper
             else
               console.log "ERROR from #{url}", @$ToListing($)
               @toListingErrorCount++
-              throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 4
+              throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 10
               callback @$ToListing($)
     , delay
     

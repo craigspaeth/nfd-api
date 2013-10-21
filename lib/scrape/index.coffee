@@ -66,7 +66,6 @@ scrapers =
   trulia: new Scraper
     startPage: 1
     listingsPerPage: 15
-    useProxy: true
     listUrl: (page) -> "http://trulia.com/for_rent/New_York,NY/0_bf/#{page}_p"
     listItemSelector: 'a.primaryLink'
     $ToListing: ($) ->
@@ -96,7 +95,6 @@ scrapers =
   nybits: new Scraper
     startPage: 0
     listingsPerPage: 200
-    useProxy: true
     zombieOpts: { runScripts: false }
     listUrl: (page) ->
       "http://www.nybits.com/search/?_a%21process=" + 
@@ -120,7 +118,6 @@ scrapers =
           name: _.clean(building)
         pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
       }
-
 
 return unless module is require.main
 dal.connect =>
