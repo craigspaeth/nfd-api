@@ -9,10 +9,7 @@ scrape-pages:
 scrape-listings:
 	until $(BIN)/coffee lib/scrape listings; do  echo "Crashed with $?">&2; sleep 1; done
 
-scrape:
-	make scrape-pages
-	make scrape-listings
-	make geocode
+scrape: scrape-pages scrape-listings geocode
 
 geocode:
 	$(BIN)/coffee lib/gecode-listings.coffee
