@@ -51,8 +51,8 @@ scrapers =
     startPage: 1
     listingsPerPage: 28
     listUrl: (page) ->
-      "http://apartable.com/apartments?broker_fee=false&city=New+York" + 
-      "&page=#{page}&state=New+York&utf8=%E2%9C%93"
+      "http://apartable.com/apartments?broker_fee=false&city=New+York" +
+      "&page=#{page}&state=NY&utf8=%E2%9C%93"
     listItemSelector: 'a.map-link'
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
