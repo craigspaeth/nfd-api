@@ -7,7 +7,6 @@ Scraper = require './scraper'
 accounting = require 'accounting'
 _ = require 'underscore'
 _.mixin require 'underscore.string'
-{ SCRAPE_PER_MINUTE } = require '../../config'
 
 parseBeds = (text) ->
   parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/i)
@@ -17,13 +16,12 @@ scrapers =
   
   streeteasy: new Scraper
     startPage: 1
-    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 10
-    weight: 1
     listUrl: (page) -> 
       "http://streeteasy.com/nyc/rentals/nyc/rental_type:frbo,brokernofee?" + 
-      "page=#{page}&sort_by=listed_desc"
+      "page=#{page}&sort_by=listed_desc&lnf=old"
     listItemSelector: '.unsponsored .item.listing .body h3 a'
+    editListingUrl: (url) -> url + '?lnf=old'
     $ToListing: ($) ->
       return $('html').html() unless $('html').html().length > 30
       rent: accounting.unformat $('h1 .price').text()
@@ -35,9 +33,7 @@ scrapers =
       
   urbanedge: new Scraper
     startPage: 0
-    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 10
-    weight: 1
     listUrl: (page) ->
       "http://www.urbanedgeny.com/results?page=#{page}&nh1=90&p[min]=&p[max]=&bd=&ba="
     listItemSelector: '.property-title a'
@@ -53,9 +49,7 @@ scrapers =
       
   apartable: new Scraper
     startPage: 1
-    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 28
-    weight: 1
     listUrl: (page) ->
       "http://apartable.com/apartments?broker_fee=false&city=New+York" + 
       "&page=#{page}&state=New+York&utf8=%E2%9C%93"
@@ -71,9 +65,7 @@ scrapers =
 
   trulia: new Scraper
     startPage: 1
-    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 15
-    weight: 0.5
     useProxy: true
     listUrl: (page) -> "http://trulia.com/for_rent/New_York,NY/0_bf/#{page}_p"
     listItemSelector: 'a.primaryLink'
@@ -89,9 +81,7 @@ scrapers =
                 
   renthop: new Scraper
     startPage: 1
-    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 22
-    weight: 1
     listUrl: (page) -> "http://www.renthop.com/search?features%5B%5D=No+Fee&page=#{page}"
     listItemSelector: '#resultsList .pictures > a'
     $ToListing: ($) ->
@@ -105,9 +95,7 @@ scrapers =
 
   nybits: new Scraper
     startPage: 0
-    requestsPerMinute: SCRAPE_PER_MINUTE
     listingsPerPage: 200
-    weight: 0.5
     useProxy: true
     zombieOpts: { runScripts: false }
     listUrl: (page) ->
@@ -154,7 +142,7 @@ dal.connect =>
     for name, scraper of scrapers
       scraper.scrapePages(
         scraper.startPage
-        Math.round scraper.weight * (1000 / scraper.listingsPerPage)
+        1000 / scraper.listingsPerPage
         callback
       )
   

@@ -8,6 +8,7 @@ Listings = require '../../dal/listings'
 _ = require 'underscore'
 Browser = require 'zombie'
 urlLib = require 'url'
+{ SCRAPE_PER_MINUTE } = require '../../config'
 
 inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
   Browser.visit proxyUrl, { runScripts: false }, (err, browser) =>
@@ -16,27 +17,28 @@ inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
       browser.wait -> cb browser.location.href
 
 PROXIES = [
-  # (url, cb) -> cb "http://translate.google.com/translate?sl=ja&tl=en&u=#{url}"
-  # (url, cb) -> cb "http://proxy2974.my-addr.org/myaddrproxy.php/http/#{url}"
+  (url, cb) -> cb "http://translate.google.com/translate?sl=ja&tl=en&u=#{url}"
+  (url, cb) -> cb "http://proxy2974.my-addr.org/myaddrproxy.php/http/#{url}"
   (url, cb) -> inputProxy 'http://www.rxproxy.com/', '#address_box', '#go', url, cb
-  # (url, cb) -> inputProxy 'http://www.surfert.nl/', '#address_box', '#go', url, cb
-  # (url, cb) -> inputProxy 'http://websiteproxy.co.uk/', 'input[name=url]', '.bigbtn', url, cb
+  (url, cb) -> inputProxy 'http://www.surfert.nl/', '#address_box', '#go', url, cb
+  (url, cb) -> inputProxy 'http://websiteproxy.co.uk/', 'input[name=url]', '.bigbtn', url, cb
 ]
 
 module.exports = class Scraper
   
   constructor: (attrs) ->
     @[key] = val for key, val of attrs
+    @requestsPerMinute = SCRAPE_PER_MINUTE
     @samePagesCount = 0
     @toListingErrorCount = 0
     @scrapePageTimeouts = []
     @host = urlLib.parse(@listUrl 0).host
-    @zombieOpts = _.extend({ silent: true }, @zombieOpts, { userAgent:
+    @zombieOpts = _.extend({ silent: true, runScripts: false }, @zombieOpts, { userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
     })
   
   proxiedUrl: (url, callback) ->
-    return url unless @useProxy
+    return callback(url) unless @useProxy
     _.sample(PROXIES)(url, callback)
     
   # Scrapes a single page and saves the empty listings to mongo.
@@ -97,7 +99,8 @@ module.exports = class Scraper
           callback {}
         else
           urls = $listings.map((i, el) => 
-            urlLib.resolve "http://" + @host, $(el).attr 'href').toArray()
+            @editListingUrl urlLib.resolve "http://" + @host, $(el).attr 'href'
+          ).toArray()
           callback null, urls
   
   # Scrapes an individual listing and converts it to our data model.
@@ -108,7 +111,7 @@ module.exports = class Scraper
   fetchListing: (url, total, callback) ->
     delay = _.random 0, ((60 / @requestsPerMinute) * 1000) * total
     setTimeout =>
-      @proxiedUrl @listUrl(page), (visitUrl) =>
+      @proxiedUrl url, (visitUrl) =>
         console.log "Fetching listing from #{visitUrl}..."
         Browser.visit visitUrl, @zombieOpts, (err, browser) => 
           browser.wait =>
@@ -152,3 +155,10 @@ module.exports = class Scraper
   # @return {Object} The listing object to be persisted into mongo
   
   $ToListing: (window) ->
+  
+  # When scraping listing urls the hrefs might not be the desired url to go to.
+  # e.g. For streeteasy we want to pass a query param to get the old street easy.
+  # 
+  # @param {String} url
+  
+  editListingUrl: (url) -> url
