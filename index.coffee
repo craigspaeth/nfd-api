@@ -1,3 +1,4 @@
+require 'newrelic'
 dal = require './dal'
 fs = require 'fs'
 express = require 'express'
