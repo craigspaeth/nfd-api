@@ -17,7 +17,8 @@
 		"jquery": "*",
 		"zombie": "*",
 		"accounting": "*",
-		"async": "*"
+		"async": "*",
+    "newrelic": "*"
   },
 	"devDependencies": {
 		"mocha": "*",
