@@ -6,6 +6,7 @@
 jQuery = require 'jquery'
 Listings = require '../../dal/listings'
 _ = require 'underscore'
+_.mixin require('underscore.string').exports()
 Browser = require 'zombie'
 urlLib = require 'url'
 { SCRAPE_PER_MINUTE } = require '../../config'
@@ -45,7 +46,7 @@ module.exports = class Scraper
   proxiedUrl: (url, callback) ->
     return callback(url) unless @useProxy
     _.sample(PROXIES)(url, callback)
-    
+  
   # Scrapes a single page and saves the empty listings to mongo.
   # 
   # @param {Number} page
@@ -167,3 +168,12 @@ module.exports = class Scraper
   # @param {String} url
   
   editListingUrl: (url) -> url
+
+  @parseBeds: (text) ->
+    text = _.clean(text)
+    parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/i)
+    if _.isNaN(parsed) then null else parsed
+
+  @parseBaths: (text) ->
+    text = _.clean(text)
+    parseFloat(text.match(/[\.\d]* bath/i)) or null

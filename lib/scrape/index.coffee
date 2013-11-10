@@ -1,123 +1,23 @@
 # 
 # Creates a bunch of scrapers and is the CLI to run them.
 # 
+# For websites that don't follow the conventional list view with detail pages you can
+# still be a "scraper" by providing the `scrapePages(start, end, callback)` and
+# `populateEmptyListings(limit, callback) APIs.
+# 
 
 dal = require '../../dal'
-Scraper = require './scraper'
-accounting = require 'accounting'
 _ = require 'underscore'
-_.mixin require 'underscore.string'
 
-parseBeds = (text) ->
-  parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/i)
-  if _.isNaN(parsed) then null else parsed
-  
 scrapers =
-  
-  streeteasy: new Scraper
-    startPage: 1
-    listingsPerPage: 10
-    listUrl: (page) -> 
-      "http://streeteasy.com/nyc/rentals/nyc/rental_type:frbo,brokernofee?" + 
-      "page=#{page}&sort_by=listed_desc&lnf=old"
-    listItemSelector: '.unsponsored .item.listing .body h3 a'
-    editListingUrl: (url) -> url + '?lnf=old'
-    $ToListing: ($) ->
-      return $('html').html() unless $('html').html().length > 30
-      rent: accounting.unformat $('h1 .price').text()
-      beds: parseBeds $('.data').text()
-      baths: parseFloat($('.data').text().match(/[\.\d]* bath/)) or null
-      location: 
-        name: $('h1 span').text()
-      pictures: $('.photo.medium > a').map(-> $(@).attr 'href').toArray()
-      
-  urbanedge: new Scraper
-    startPage: 0
-    listingsPerPage: 10
-    listUrl: (page) ->
-      "http://www.urbanedgeny.com/results?page=#{page}&nh1=90&p[min]=&p[max]=&bd=&ba="
-    listItemSelector: '.property-title a'
-    $ToListing: ($) ->
-      return $('html').html() unless $('html').html().length > 30
-      rent: accounting.unformat $('#listing-overview > div:first-child').text()
-      beds: parseBeds $('#listing-overview').text()
-      baths: parseFloat($('#listing-overview').text().match(/[\.\d]* bath/i)) or null
-      location: 
-        name: _.clean($('.address-block').text())
-      pictures: $('#slide-runner a').map(->
-        "http://www.urbanedgeny.com" + $(@).attr 'href').toArray()
-      
-  apartable: new Scraper
-    startPage: 1
-    listingsPerPage: 28
-    listUrl: (page) ->
-      "http://apartable.com/apartments?broker_fee=false&city=New+York" +
-      "&page=#{page}&state=NY&utf8=%E2%9C%93"
-    listItemSelector: 'a.map-link'
-    $ToListing: ($) ->
-      return $('html').html() unless $('html').html().length > 30
-      rent: accounting.unformat $('.price').text()
-      beds: parseBeds $('.bedrooms').text()
-      baths: parseFloat($('.bathrooms').text().match(/[\.\d]* bath/i)) or null
-      location: 
-        name: $('#map-container h3').text()
-      pictures: $('#galleria a').map(-> $(@).attr 'href').toArray()
-
-  trulia: new Scraper
-    startPage: 1
-    listingsPerPage: 15
-    listUrl: (page) -> "http://trulia.com/for_rent/New_York,NY/0_bf/#{page}_p"
-    listItemSelector: 'a.primaryLink'
-    $ToListing: ($) ->
-      return $('html').html() unless $('html').html().length > 30
-      rent: accounting.unformat $('[itemprop="price"]').html()
-      beds: parseBeds $('.listBulleted').text()
-      baths: parseFloat($('.listBulleted').html().match(/[\.\d]* bath/i))
-      location:
-        name: $('[itemprop="address"]').html()
-      pictures: _.pluck($('.photoPlayer').data('photos')?.photos, 'standard_url') or
-                [$('.photoPlayerCurrentItem img').attr('src')]
-                
-  renthop: new Scraper
-    startPage: 1
-    listingsPerPage: 22
-    listUrl: (page) -> "http://www.renthop.com/search?features%5B%5D=No+Fee&page=#{page}"
-    listItemSelector: '#resultsList .pictures > a'
-    $ToListing: ($) ->
-      return $('html').html() unless $('html').html().length > 30
-      rent: accounting.unformat $('.listingHeading span:first strong').html()
-      beds: parseBeds $('.listingHeading').text()
-      baths: parseFloat($('.listingHeading').html().match(/[\.\d]* bath/i))
-      location:
-        name: $('.listingHeading h1').text().match(/at(.*) for/)[1]
-      pictures: $('#photoSlider a').map(-> $(@).attr 'href').toArray()
-
-  nybits: new Scraper
-    startPage: 0
-    listingsPerPage: 200
-    zombieOpts: { runScripts: false }
-    listUrl: (page) ->
-      "http://www.nybits.com/search/?_a%21process=" + 
-      "y&_rid_=3&_ust_todo_=65733&_xid_=" +
-      "aaLx8ms445ZfSq-1377828951&%21%21rmin=&%21%21rmax=&%21%21fee=nofee&%21%21orderby=" + 
-      "dateposted&submit=+SHOW+RENTAL+APARTMENTS+&!!_magic%3APrefix!_search_start%3D#{page * 200}="
-    listItemSelector: '[colspan="3"] a'
-    $ToListing: ($) ->
-      return $('html').html() unless $('html').html().length > 30
-      rent = $("#capsuletable tr").filter( -> 
-             $(@).find("td:eq(0)").text().match /Rent/).find("td:eq(1)").text()
-      layout = $("#capsuletable tr").filter( -> 
-               $(@).find("td:eq(0)").text().match /Layout/).find("td:eq(1)").text()
-      building = $("#capsuletable tr").filter( -> 
-                 $(@).find("td:eq(0)").text().match /Building/).find("td:eq(1)").text()
-      {
-        rent: accounting.unformat(rent)
-        beds: parseFloat(if layout.match /studio/i then 0 else layout) or null
-        baths: null
-        location:
-          name: _.clean(building)
-        pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
-      }
+  streeteasy: require './scrapers/streeteasy'
+  urbanedge: require './scrapers/urbanedge'
+  apartable: require './scrapers/apartable'
+  trulia: require './scrapers/trulia'
+  renthop: require './scrapers/renthop'
+  nybits: require './scrapers/nybits'
+  '9300realty': require './scrapers/9300realty'
+  iconrealtymgmt: require './scrapers/iconrealtymgmt'
 
 return unless module is require.main
 dal.connect =>
