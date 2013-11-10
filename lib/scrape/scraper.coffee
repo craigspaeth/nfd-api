@@ -195,7 +195,7 @@ module.exports = class Scraper
 
   @parseBeds: (text) ->
     text = _.clean(text)
-    parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/i)
+    parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/i) or text
     if _.isNaN(parsed) then null else parsed
 
   @parseBaths: (text) ->
