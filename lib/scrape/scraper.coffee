@@ -178,7 +178,7 @@ module.exports = class Scraper
           listing.dateScraped = new Date
           Listings.upsert(listing)
           callback()
-          
+  
   # No-op that converts a browser window context to a listing object close to our schema.
   # 
   # @param {Object} window The Browser window

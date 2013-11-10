@@ -8,18 +8,12 @@
 
 dal = require '../../dal'
 _ = require 'underscore'
+fs = require 'fs'
+{ basename } = require 'path'
 
-scrapers =
-  streeteasy: require './scrapers/streeteasy'
-  urbanedge: require './scrapers/urbanedge'
-  apartable: require './scrapers/apartable'
-  trulia: require './scrapers/trulia'
-  renthop: require './scrapers/renthop'
-  nybits: require './scrapers/nybits'
-  '9300realty': require './scrapers/9300realty'
-  iconrealtymgmt: require './scrapers/iconrealtymgmt'
-  sspny: require './scrapers/sspny'
-  gonofee: require './scrapers/gonofee'
+scrapers = {}
+for f in fs.readdirSync('./lib/scrape/scrapers')
+  scrapers[basename f, '.coffee'] = require "./scrapers/#{f}"
 
 return unless module is require.main
 dal.connect =>
