@@ -18,6 +18,8 @@ scrapers =
   nybits: require './scrapers/nybits'
   '9300realty': require './scrapers/9300realty'
   iconrealtymgmt: require './scrapers/iconrealtymgmt'
+  sspny: require './scrapers/sspny'
+  gonofee: require './scrapers/gonofee'
 
 return unless module is require.main
 dal.connect =>

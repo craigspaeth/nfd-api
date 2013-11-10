@@ -18,7 +18,10 @@
 		"zombie": "*",
 		"accounting": "*",
 		"async": "*",
-    "newrelic": "*"
+    "newrelic": "*",
+    "request": "*",
+    "cheerio": "*",
+    "jsdom": "*"
   },
 	"devDependencies": {
 		"mocha": "*",

@@ -11,7 +11,7 @@ module.exports = new Scraper
   $ToListing: ($) ->
     return $('html').html() unless $('html').html().length > 30
     rent: accounting.unformat _.trim $('.innerRight:nth-child(3) .essentials:nth-child(6)').text()
-    beds: parseInt $('.innerRight:nth-child(3) .essentials:nth-child(4)').text().replace('Bedrooms: ', '')
+    beds: parseBeds $('.innerRight:nth-child(3) .essentials:nth-child(4)').text().replace('Bedrooms: ', '')
     baths: parseInt $('.innerRight:nth-child(3) .essentials:nth-child(5)').text().replace('Bathrooms: ', '')
     location: 
       name: _.clean ($('.dspBreadCrumbs > a:nth-child(3)').text() + 

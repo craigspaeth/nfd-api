@@ -9,7 +9,10 @@ _ = require 'underscore'
 _.mixin require('underscore.string').exports()
 Browser = require 'zombie'
 urlLib = require 'url'
+cheerio = require 'cheerio'
 { SCRAPE_PER_MINUTE } = require '../../config'
+request = require 'request'
+jsdom = require 'jsdom'
 
 inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
   Browser.visit proxyUrl, { runScripts: false }, (err, browser) =>
@@ -24,6 +27,8 @@ PROXIES = [
   (url, cb) -> inputProxy 'http://www.surfert.nl/', '#address_box', '#go', url, cb
   (url, cb) -> inputProxy 'http://websiteproxy.co.uk/', 'input[name=url]', '.bigbtn', url, cb
 ]
+
+Array::toArray = -> @
 
 module.exports = class Scraper
   
@@ -42,11 +47,34 @@ module.exports = class Scraper
     }, @zombieOpts, { userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"
     })
+    @engines ?= { list: 'zombie', item: 'zombie' }
   
   proxiedUrl: (url, callback) ->
     return callback(url) unless @useProxy
     _.sample(PROXIES)(url, callback)
   
+  # Wrapper over zombie's visit to switch between zombie and superagent.
+  # 
+  # @param {String} url
+  # @param {Function} callback Callsback with (err, $)
+
+  visit: (engine, url, callback) ->
+    cb = (err, $) ->
+      return callback err if err
+      if $('html').html().length <= 30
+        console.log "Document to small, looks like:"
+        console.log $('html').html()
+        return callback Error('Document to small.')
+      callback null, $
+    switch engine
+      when 'zombie'
+        Browser.visit url, @zombieOpts, (err, browser) =>
+          browser.wait => cb err, jQuery.create(browser.window)
+      when 'request'
+        request url, (err, res, body) -> cb err, cheerio.load(body)
+      when 'jsdom'
+        jsdom.env url, [], (err, window) -> cb err, jQuery.create(window)
+
   # Scrapes a single page and saves the empty listings to mongo.
   # 
   # @param {Number} page
@@ -97,14 +125,13 @@ module.exports = class Scraper
   fetchListingUrls: (page, callback) ->
     console.log "Fetching page #{page} from #{@listUrl(page)}..."
     @proxiedUrl @listUrl(page), (url) =>
-      Browser.visit url, @zombieOpts, (err, browser) =>
-        $ = jQuery.create(browser.window)
+      @visit @engines['list'], url, (err, $) =>
         $listings = $(@listItemSelector)
         if $listings?.length is 0
           console.log "ERROR: Found no listings for on page #{page}: #{url}"
           callback {}
         else
-          urls = $listings.map((i, el) => 
+          urls = $listings.map((i, el) =>
             @editListingUrl urlLib.resolve "http://" + @host, $(el).attr 'href'
           ).toArray()
           callback null, urls
@@ -119,17 +146,14 @@ module.exports = class Scraper
     setTimeout =>
       @proxiedUrl url, (visitUrl) =>
         console.log "Fetching listing from #{visitUrl}..."
-        Browser.visit visitUrl, @zombieOpts, (err, browser) => 
-          browser.wait =>
-            $ = jQuery.create(browser.window)
-            if _.isObject @$ToListing($)
-              console.log "Saved listing from #{url}.", @$ToListing($)
-              callback null, _.extend @$ToListing($), url: url
-            else
-              console.log "ERROR from #{url}", @$ToListing($)
-              @toListingErrorCount++
-              throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 10
-              callback @$ToListing($)
+        @visit @engines['item'], visitUrl, (err, $) =>
+          if err
+            @toListingErrorCount++
+            throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 10
+            callback @$ToListing($)
+          else
+            console.log "Saved listing from #{url}.", @$ToListing($)
+            callback null, _.extend @$ToListing($), url: url
     , delay
     
   # Goes through listings without `dateScraped` and populates them by scraping

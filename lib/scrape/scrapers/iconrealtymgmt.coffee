@@ -19,10 +19,12 @@ module.exports = new Scraper
   listItemSelector: '.result-info a'
   $ToListing: ($) ->
     return $('html').html() unless $('html').html().length > 30
-    rent: accounting.unformat $('#listing-other ul li:nth-child(1)').text().replace('Price: ', '').replace('/mo.', '')
+    rent: accounting.unformat $('#listing-other ul li:nth-child(1)')
+                              .text().replace('Price: ', '').replace('/mo.', '')
     beds: bedMap[_.trim $('#listing-other ul li:nth-child(2)').text()
             .replace('Unit Type: ', '').replace(' Bedroom', '')]
     baths: parseInt $('#listing-other ul li:nth-child(3)').text().replace('Bathrooms: ', '')
     location: 
-      name: $('#listing-location div:nth-child(2)').text() + ', ' + $('#listing-location div:nth-child(4)').text()
+      name: $('#listing-location div:nth-child(2)').text() + ', ' + 
+            $('#listing-location div:nth-child(4)').text()
     pictures: $('#listing-thumbnails a').map(-> $(@).attr "href").toArray()
