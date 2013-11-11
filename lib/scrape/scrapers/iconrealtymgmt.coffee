@@ -12,13 +12,10 @@ bedMap =
   'Five': 5
 
 module.exports = new Scraper
-  startPage: 0
-  listingsPerPage: perPage
   listUrl: (page) ->
     "http://www.iconrealtymgmt.com/search?price=All&beds=All&location=All&visible=1&start=#{page * perPage}"
   listItemSelector: '.result-info a'
   $ToListing: ($) ->
-    return $('html').html() unless $('html').html().length > 30
     rent: accounting.unformat $('#listing-other ul li:nth-child(1)')
                               .text().replace('Price: ', '').replace('/mo.', '')
     beds: bedMap[_.trim $('#listing-other ul li:nth-child(2)').text()

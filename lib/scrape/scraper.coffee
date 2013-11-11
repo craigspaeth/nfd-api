@@ -127,9 +127,11 @@ module.exports = class Scraper
     @proxiedUrl @listUrl(page), (url) =>
       @visit @engines['list'], url, (err, $) =>
         $listings = $(@listItemSelector)
-        if $listings?.length is 0
-          console.log "ERROR: Found no listings for on page #{page}: #{url}"
-          callback {}
+        err = "Found no listings for on page #{page}: #{url}" if $listings?.length is 0
+        if err
+          console.log "ERROR: #{err}"
+          console.log $('.resultRow').html()
+          callback err
         else
           urls = $listings.map((i, el) =>
             @editListingUrl urlLib.resolve "http://" + @host, $(el).attr 'href'
@@ -200,4 +202,5 @@ module.exports = class Scraper
 
   @parseBaths: (text) ->
     text = _.clean(text)
-    parseFloat(text.match(/[\.\d]* bath/i)) or null
+    parsed = parseFloat if text.match(/full/i) then 1 else text.match(/[\.\d]* bath/i) or text
+    if _.isNaN(parsed) then null else parsed

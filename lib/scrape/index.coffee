@@ -18,7 +18,9 @@ for f in fs.readdirSync('./lib/scrape/scrapers')
 return unless module is require.main
 dal.connect =>
   scraper = scrapers[process.argv[2]]
-  
+
+  return process.exit() unless scraper?
+
   # Scrape pages of listings with `coffee lib/scrape streeteasy 0 1`
   if process.argv[4]
     scraper.scrapePages parseInt(process.argv[3]), parseInt(process.argv[4]), -> process.exit()
@@ -33,11 +35,7 @@ dal.connect =>
       console.log "DONE SCRAPING PAGES FOR ALL SOURCES!"
       process.exit()
     for name, scraper of scrapers
-      scraper.scrapePages(
-        scraper.startPage
-        1000 / scraper.listingsPerPage
-        callback
-      )
+      scraper.scrapePages(0, 20, callback)
   
   # Scrape ALL THE LISTINGS with  with `coffee lib/scrape listings`
   else if process.argv[2] is 'listings'

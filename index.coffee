@@ -20,6 +20,8 @@ for router in routers
     app[method] routeName, hash.cb
 
 # Connect dal to mongo and start server
+console.log 'starting'
 dal.connect (err) ->
+  console.log 'started'
   throw err if err
   app.listen PORT, -> console.log 'Listening on ' + PORT

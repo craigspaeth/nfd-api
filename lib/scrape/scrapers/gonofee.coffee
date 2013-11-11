@@ -4,8 +4,6 @@ _ = require 'underscore'
 _.mixin require('underscore.string').exports()
 
 module.exports = new Scraper
-  startPage: 0
-  listingsPerPage: 200
   engines: { list: 'request', item: 'request' }
   listUrl: (page) -> "http://gonofee.com/Listings-no-fee-apartments/currentpage/#{page}.aspx"
   listItemSelector: '.RealEstateLink a'
@@ -18,4 +16,4 @@ module.exports = new Scraper
                             .text().replace('Bathrooms', '')
     location: 
       name: _.clean $('#rightcolumn .stats tr:nth-child(1)').text()
-    pictures: $('#propertycontainer a').map(-> $(@).attr "href").toArray()
+    pictures: $('#propertycontainer a').map(-> 'http://gonofee.com' + $(@).attr "href").toArray()

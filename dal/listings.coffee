@@ -145,6 +145,21 @@ GOOD_PARAMS = @GOOD_PARAMS =
           (groups[groupName] ?= []).push(neighborhood)
     callback null, groups
 
+# Gives a count of listings by their sources
+# 
+# @param {String} hostnames
+# @param {Function} callback Calls back with (err, hash)
+
+# @sourceCounts = (hostnames, callback)
+#   hash = {}
+#   cb = _.after hostnames.length, -> callback null, hash
+#   addCount(hash, hostname, cb) for hostname in hostnames
+
+# addCount = (hash, hostname, callback) ->
+#   @collection.count { url: { $regex: hostname } }, (err, count) ->
+#     hash[hostname] = count
+#     callback()
+
 # Converts a raw listing document into a JSON hash useable in our API.
 # 
 # @param {Object} docs Array or object of listing documents

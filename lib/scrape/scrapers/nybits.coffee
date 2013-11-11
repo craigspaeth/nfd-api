@@ -1,10 +1,10 @@
-Scraper = require '../scraper'
+{ parseBeds, parseBaths } = Scraper = require '../scraper'
 accounting = require 'accounting'
+_ = require 'underscore'
+_.mixin require('underscore.string').exports()
 
 module.exports = new Scraper
-  startPage: 0
-  listingsPerPage: 200
-  zombieOpts: { runScripts: false }
+  engines: { list: 'request', item: 'request' }
   listUrl: (page) ->
     "http://www.nybits.com/search/?_a%21process=" + 
     "y&_rid_=3&_ust_todo_=65733&_xid_=" +
@@ -12,18 +12,9 @@ module.exports = new Scraper
     "dateposted&submit=+SHOW+RENTAL+APARTMENTS+&!!_magic%3APrefix!_search_start%3D#{page * 200}="
   listItemSelector: '[colspan="3"] a'
   $ToListing: ($) ->
-    return $('html').html() unless $('html').html().length > 30
-    rent = $("#capsuletable tr").filter( -> 
-           $(@).find("td:eq(0)").text().match /Rent/).find("td:eq(1)").text()
-    layout = $("#capsuletable tr").filter( -> 
-             $(@).find("td:eq(0)").text().match /Layout/).find("td:eq(1)").text()
-    building = $("#capsuletable tr").filter( -> 
-               $(@).find("td:eq(0)").text().match /Building/).find("td:eq(1)").text()
-    {
-      rent: accounting.unformat(rent)
-      beds: parseFloat(if layout.match /studio/i then 0 else layout) or null
-      baths: null
-      location:
-        name: _.clean(building)
-      pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
-    }
+    rent: accounting.unformat _.trim $("#capsuletable tr:nth-child(2)").text().replace('Rent:', '')
+    beds: parseBeds $("#capsuletable tr:nth-child(1)").text().replace('Layout:', '')
+    baths: null
+    location:
+      name: _.clean $("#capsuletable tr:nth-child(7)").text().replace('Building:', '')
+    pictures: $('.photocolumntitle').nextAll('img').map(-> $(@).attr 'src').toArray()
