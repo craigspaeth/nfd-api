@@ -68,8 +68,8 @@ module.exports = class Scraper
       callback null, $
     switch engine
       when 'zombie'
-        Browser.visit url, @zombieOpts, (err, browser) =>
-          browser.wait => cb err, jQuery.create(browser.window)
+        Browser.visit url, @zombieOpts, (err, browser) ->
+          browser.wait -> cb err, jQuery.create(browser.window)
       when 'request'
         request url, (err, res, body) -> cb err, cheerio.load(body)
       when 'jsdom'

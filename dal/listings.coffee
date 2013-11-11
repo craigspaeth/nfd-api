@@ -150,15 +150,15 @@ GOOD_PARAMS = @GOOD_PARAMS =
 # @param {String} hostnames
 # @param {Function} callback Calls back with (err, hash)
 
-# @sourceCounts = (hostnames, callback)
-#   hash = {}
-#   cb = _.after hostnames.length, -> callback null, hash
-#   addCount(hash, hostname, cb) for hostname in hostnames
+@sourceCounts = (hostnames, callback) ->
+  hash = {}
+  cb = _.after hostnames.length, -> callback null, hash
+  addCount(hash, hostname, cb) for hostname in hostnames
 
-# addCount = (hash, hostname, callback) ->
-#   @collection.count { url: { $regex: hostname } }, (err, count) ->
-#     hash[hostname] = count
-#     callback()
+addCount = (hash, hostname, callback) ->
+  @collection.count { url: { $regex: hostname } }, (err, count) ->
+    hash[hostname] = count
+    callback()
 
 # Converts a raw listing document into a JSON hash useable in our API.
 # 
