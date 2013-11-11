@@ -126,13 +126,12 @@ module.exports = class Scraper
     console.log "Fetching page #{page} from #{@listUrl(page)}..."
     @proxiedUrl @listUrl(page), (url) =>
       @visit @engines['list'], url, (err, $) =>
-        $listings = $(@listItemSelector)
         err = "Found no listings for on page #{page}: #{url}" if $listings?.length is 0
         if err
           console.log "ERROR: #{err}"
-          console.log $('.resultRow').html()
           callback err
         else
+          $listings = $(@listItemSelector)
           urls = $listings.map((i, el) =>
             @editListingUrl urlLib.resolve "http://" + @host, $(el).attr 'href'
           ).toArray()

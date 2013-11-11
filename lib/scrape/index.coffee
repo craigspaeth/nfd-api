@@ -13,13 +13,12 @@ fs = require 'fs'
 
 scrapers = {}
 for f in fs.readdirSync('./lib/scrape/scrapers')
-  scrapers[basename f, '.coffee'] = require "./scrapers/#{f}"
+  s = require "./scrapers/#{f}"
+  scrapers[basename f, '.coffee'] = s if s.scrapePages?
 
 return unless module is require.main
 dal.connect =>
   scraper = scrapers[process.argv[2]]
-
-  return process.exit() unless scraper?
 
   # Scrape pages of listings with `coffee lib/scrape streeteasy 0 1`
   if process.argv[4]
@@ -31,10 +30,12 @@ dal.connect =>
   
   # Scrape ALL THE PAGES with  with `coffee lib/scrape pages`
   else if process.argv[2] is 'pages'
+    console.log 'mooo'
     callback = _.after _.keys(scrapers).length, -> 
       console.log "DONE SCRAPING PAGES FOR ALL SOURCES!"
       process.exit()
     for name, scraper of scrapers
+      console.log name
       scraper.scrapePages(0, 20, callback)
   
   # Scrape ALL THE LISTINGS with  with `coffee lib/scrape listings`
