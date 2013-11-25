@@ -101,7 +101,7 @@ module.exports = class Scraper
           else
             listings = ({ url: url } for url in urls)
             Listings.upsert listings, (err) ->
-              console.log "Saved page #{page}."
+              console.log "Saved page #{page} for #{@host}."
               callback()
     , delay
   

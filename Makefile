@@ -14,6 +14,9 @@ scrape: scrape-pages scrape-listings geocode
 geocode:
 	$(BIN)/coffee lib/gecode-listings.coffee
 
+drop-old:
+	$(BIN)/coffee lib/drop-old.coffee
+
 test:
 	$(BIN)/mocha $(shell find test -name '*.coffee' -not -path 'test/helpers/*' -not -path 'test/scrapers/*')
 

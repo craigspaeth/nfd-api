@@ -170,3 +170,12 @@ addCount = (hash, hostname, callback) ->
       id: doc._id
       _id: undefined
   if _.isArray(docs) then (schema(doc) for doc in docs) else schema(docs)
+
+# Drops listings older than a month to keep things fresh.
+# 
+# @param {Function} callback Calls back with (err, numRemoved)
+
+@dropOld = (callback) ->
+  now = new Date()
+  date = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
+  @collection.remove { dateScraped: { $lte: date } }, callback
