@@ -1,4 +1,4 @@
-Scraper = require '../scraper'
+{ parseBeds, parseBaths } = Scraper = require '../scraper'
 accounting = require 'accounting'
 _ = require 'underscore'
 _.mixin require('underscore.string').exports()

@@ -59,21 +59,21 @@ module.exports = class Scraper
   # @param {Function} callback Callsback with (err, $)
 
   visit: (engine, url, callback) ->
-    cb = (err, $) ->
+    cb = (err, $, window) ->
       return callback err if err
       if $('html').html().length <= 30
         console.log "Document to small, looks like:"
-        console.log $('html').html()
         return callback Error('Document to small.')
-      callback null, $
+      callback null, $, window
     switch engine
       when 'zombie'
         Browser.visit url, @zombieOpts, (err, browser) ->
-          browser.wait -> cb err, jQuery.create(browser.window)
+          browser.wait ->
+            cb err, jQuery.create(browser.window), browser.window
       when 'request'
         request url, (err, res, body) -> cb err, cheerio.load(body)
       when 'jsdom'
-        jsdom.env url, [], (err, window) -> cb err, jQuery.create(window)
+        jsdom.env url, [], (err, window) -> cb err, jQuery.create(window), window
 
   # Scrapes a single page and saves the empty listings to mongo.
   # 
@@ -147,14 +147,15 @@ module.exports = class Scraper
     setTimeout =>
       @proxiedUrl url, (visitUrl) =>
         console.log "Fetching listing from #{visitUrl}..."
-        @visit @engines['item'], visitUrl, (err, $) =>
+        @visit @engines['item'], visitUrl, (err, $, window) =>
+          err = 'No dollar sign!? ' + @engines?.item unless $?
           if err
             @toListingErrorCount++
             throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 10
-            callback @$ToListing($)
+            callback @$ToListing($, window)
           else
-            console.log "Saved listing from #{url}.", @$ToListing($)
-            callback null, _.extend @$ToListing($), url: url
+            console.log "Saved listing from #{url}.", @$ToListing($, window)
+            callback null, _.extend @$ToListing($, window), url: url
     , delay
     
   # Goes through listings without `dateScraped` and populates them by scraping
