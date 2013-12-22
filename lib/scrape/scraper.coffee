@@ -38,7 +38,7 @@ module.exports = class Scraper
     @samePagesCount = 0
     @toListingErrorCount = 0
     @scrapePageTimeouts = []
-    @host = urlLib.parse(@listUrl 0).host
+    @host = urlLib.parse(@listUrl 0).hostname
     @zombieOpts = _.extend({
       silent: true
       runScripts: false
@@ -62,8 +62,8 @@ module.exports = class Scraper
     cb = (err, $, window) ->
       return callback err if err
       if $('html').html().length <= 30
-        console.log "Document to small, looks like:"
-        return callback Error('Document to small.')
+        console.log "Document too small for #{url}, looks like:"
+        return callback Error("Document too small for. #{url}")
       callback null, $, window
     switch engine
       when 'zombie'

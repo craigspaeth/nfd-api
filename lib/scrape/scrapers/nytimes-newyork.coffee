@@ -15,7 +15,7 @@ opts =
     beds: parseBeds $('.info:first-of-type li:first-child').text()
     baths: parseBaths $('.info:first-of-type li:nth-child(2)').text()
     location:
-      name: _.clean $('.locality').text().split('Also')[0]
+      name: _.clean ($('.locality').text().split('Also')?[0] or $('.locality').text())
     pictures: _.uniq _.flatten(_.map($('html').html().match(/arrPhotos\.push.*/g), (text) ->
       (text.match(/http.*(jpg|jpeg)/i)[0].split("', '"))))
 
