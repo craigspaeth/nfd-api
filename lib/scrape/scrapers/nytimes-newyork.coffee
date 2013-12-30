@@ -17,7 +17,7 @@ opts =
     location:
       name: _.clean ($('.locality').text().split('Also')?[0] or $('.locality').text())
     pictures: _.uniq _.flatten(_.map($('html').html().match(/arrPhotos\.push.*/g), (text) ->
-      (text.match(/http.*(jpg|jpeg)/i)[0].split("', '"))))
+      (text.match(/http.*(jpg|jpeg)/i)?[0].split("', '"))))
 
 module.exports = new Scraper opts
 

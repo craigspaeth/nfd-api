@@ -13,6 +13,7 @@ cheerio = require 'cheerio'
 { SCRAPE_PER_MINUTE } = require '../../config'
 request = require 'request'
 jsdom = require 'jsdom'
+fs = require 'fs'
 
 inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
   Browser.visit proxyUrl, { runScripts: false }, (err, browser) =>
@@ -21,11 +22,11 @@ inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
       browser.wait -> cb browser.location.href
 
 PROXIES = [
-  (url, cb) -> cb "http://translate.google.com/translate?sl=ja&tl=en&u=#{url}"
-  (url, cb) -> cb "http://proxy2974.my-addr.org/myaddrproxy.php/http/#{url}"
+  # (url, cb) -> cb "http://translate.google.com/translate?sl=ja&tl=en&u=#{url}"
+  (url, cb) -> cb "http://proxy2974.my-addr.org/myaddrproxy.php/http/#{url.replace('http://', '')}"
   (url, cb) -> inputProxy 'http://www.rxproxy.com/', '#address_box', '#go', url, cb
   (url, cb) -> inputProxy 'http://www.surfert.nl/', '#address_box', '#go', url, cb
-  (url, cb) -> inputProxy 'http://websiteproxy.co.uk/', 'input[name=url]', '.bigbtn', url, cb
+  # (url, cb) -> inputProxy 'http://websiteproxy.co.uk/', 'input[name=url]', '.bigbtn', url, cb
 ]
 
 Array::toArray = -> @
@@ -100,7 +101,7 @@ module.exports = class Scraper
             callback()
           else
             listings = ({ url: url } for url in urls)
-            Listings.upsert listings, (err) ->
+            Listings.upsert listings, (err) =>
               console.log "Saved page #{page} for #{@host}."
               callback()
     , delay
@@ -196,11 +197,11 @@ module.exports = class Scraper
   editListingUrl: (url) -> url
 
   @parseBeds: (text) ->
-    text = _.clean(text)
+    text = _.clean(text) or ''
     parsed = parseFloat if text.match(/studio/i) then 0 else text.match(/[\.\d]* bed/i) or text
     if _.isNaN(parsed) then null else parsed
 
   @parseBaths: (text) ->
-    text = _.clean(text)
+    text = _.clean(text) or ''
     parsed = parseFloat if text.match(/full/i) then 1 else text.match(/[\.\d]* bath/i) or text
     if _.isNaN(parsed) then null else parsed

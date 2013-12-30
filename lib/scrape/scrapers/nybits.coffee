@@ -5,6 +5,7 @@ _.mixin require('underscore.string').exports()
 
 module.exports = new Scraper
   engines: { list: 'request', item: 'request' }
+  useProxy: true
   listUrl: (page) ->
     "http://www.nybits.com/search/?_a%21process=" + 
     "y&_rid_=3&_ust_todo_=65733&_xid_=" +
