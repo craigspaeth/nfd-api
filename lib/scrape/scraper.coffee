@@ -8,12 +8,14 @@ Listings = require '../../dal/listings'
 _ = require 'underscore'
 _.mixin require('underscore.string').exports()
 Browser = require 'zombie'
-urlLib = require 'url'
+{ parse, resolve } = require 'url'
 cheerio = require 'cheerio'
-{ SCRAPE_PER_MINUTE } = require '../../config'
+{ SCRAPE_PER_MINUTE, VISIT_TIMEOUT, MIXPANEL_KEY } = require '../../config'
 request = require 'request'
 jsdom = require 'jsdom'
 fs = require 'fs'
+Mixpanel = require 'mixpanel'
+mixpanel = Mixpanel.init MIXPANEL_KEY
 
 inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
   Browser.visit proxyUrl, { runScripts: false }, (err, browser) =>
@@ -37,9 +39,8 @@ module.exports = class Scraper
     @[key] = val for key, val of attrs
     @requestsPerMinute = SCRAPE_PER_MINUTE
     @samePagesCount = 0
-    @toListingErrorCount = 0
     @scrapePageTimeouts = []
-    @host = urlLib.parse(@listUrl 0).hostname
+    @host = parse(@listUrl 0).hostname
     @zombieOpts = _.extend({
       silent: true
       runScripts: false
@@ -59,13 +60,17 @@ module.exports = class Scraper
   # @param {String} url
   # @param {Function} callback Callsback with (err, $)
 
-  visit: (engine, url, callback) ->
+  visit: (engine, url, callback) =>
+    timeout = null
+    # Callback with the $ and window objects
     cb = (err, $, window) ->
+      clearTimeout timeout
       return callback err if err
       if $('html').html().length <= 30
         console.log "Document too small for #{url}, looks like:"
         return callback Error("Document too small for. #{url}")
       callback null, $, window
+    # Visit the url depending on which engine was chosen
     switch engine
       when 'zombie'
         Browser.visit url, @zombieOpts, (err, browser) ->
@@ -75,6 +80,8 @@ module.exports = class Scraper
         request url, (err, res, body) -> cb err, cheerio.load(body)
       when 'jsdom'
         jsdom.env url, [], (err, window) -> cb err, jQuery.create(window), window
+    # Ensure that visiting a url times out after a while
+    timeout = setTimeout (-> cb "Timeout for #{url}"), VISIT_TIMEOUT
 
   # Scrapes a single page and saves the empty listings to mongo.
   # 
@@ -94,7 +101,7 @@ module.exports = class Scraper
         return
       @fetchListingUrls page, (err, urls) =>
         return callback('fail') if err
-        Listings.collection.find(url: { $in: urls }).count (err, count) => 
+        Listings.collection.count { url: { $in: urls } }, (err, count) =>
           if count is urls.length and urls.length > 0 and count > 0
             console.log "Page #{page} already scraped from #{@host}."
             @samePagesCount++
@@ -103,6 +110,9 @@ module.exports = class Scraper
             listings = ({ url: url } for url in urls)
             Listings.upsert listings, (err) =>
               console.log "Saved page #{page} for #{@host}."
+              mixpanel.track 'Scraped page',
+                host: @host
+                page: page
               callback()
     , delay
   
@@ -127,14 +137,24 @@ module.exports = class Scraper
     console.log "Fetching page #{page} from #{@listUrl(page)}..."
     @proxiedUrl @listUrl(page), (url) =>
       @visit @engines['list'], url, (err, $) =>
-        err = "Found no listings for on page #{page}: #{url}" if $listings?.length is 0
+        $listings = $(@listItemSelector)
+        if $listings.length is 0
+          err = "Found no listings at #{url}"
+          @samePagesCount++
         if err
           console.log "ERROR: #{err}"
+          mixpanel.track 'Error scraping page',
+            host: @host
+            url: url
+            type: if err.toString().match 'Found no listings'
+                    'no listings'
+                  else
+                    err.toString()
           callback err
         else
-          $listings = $(@listItemSelector)
           urls = $listings.map((i, el) =>
-            @editListingUrl urlLib.resolve "http://" + @host, $(el).attr 'href'
+            href = $(el).attr('href') or el.attribs?.href
+            @editListingUrl resolve "http://" + @host, href
           ).toArray()
           callback null, urls
   
@@ -151,11 +171,12 @@ module.exports = class Scraper
         @visit @engines['item'], visitUrl, (err, $, window) =>
           err = 'No dollar sign!? ' + @engines?.item unless $?
           if err
-            @toListingErrorCount++
-            throw "Too many listings returning unexpected HTML" if @toListingErrorCount > 10
+            mixpanel.track 'Error scraping listing',
+              host: @host
+              url: url
+              err: err.toString()
             callback @$ToListing($, window)
           else
-            console.log "Saved listing from #{url}.", @$ToListing($, window)
             callback null, _.extend @$ToListing($, window), url: url
     , delay
     
@@ -179,8 +200,17 @@ module.exports = class Scraper
         @fetchListing url, listings.length, (err, listing) =>
           return callback(err) if err
           listing.dateScraped = new Date
-          Listings.upsert(listing)
-          callback()
+          @saveListing url, listing, callback
+
+  saveListing: (url, listing, callback) ->
+    Listings.upsert listing, (err, docs) =>
+      return callback err if err
+      console.log "Saved listing from #{url}.", docs[0]
+      mixpanel.track 'Scraped listing',
+        host: @host
+        url: url
+        doc: docs[0]
+      callback()
   
   # No-op that converts a browser window context to a listing object close to our schema.
   # 

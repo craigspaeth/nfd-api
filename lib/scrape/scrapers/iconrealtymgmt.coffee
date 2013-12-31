@@ -12,6 +12,7 @@ bedMap =
   'Five': 5
 
 module.exports = new Scraper
+  engines: { list: 'request', item: 'request' }
   listUrl: (page) ->
     "http://www.iconrealtymgmt.com/search?price=All&beds=All&location=All&visible=1&start=#{page * perPage}"
   listItemSelector: '.result-info a'

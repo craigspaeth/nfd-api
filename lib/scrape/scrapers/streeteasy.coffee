@@ -2,6 +2,7 @@ Scraper = require '../scraper'
 accounting = require 'accounting'
 
 module.exports = new Scraper
+  engines: { list: 'request', item: 'request' }
   listUrl: (page) -> 
     "http://streeteasy.com/nyc/rentals/nyc/rental_type:frbo,brokernofee?" + 
     "page=#{page}&sort_by=listed_desc&lnf=old"

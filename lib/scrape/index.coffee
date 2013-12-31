@@ -10,6 +10,10 @@ dal = require '../../dal'
 _ = require 'underscore'
 fs = require 'fs'
 { basename } = require 'path'
+{ SCRAPE_TOTAL_PAGES } = require '../../config'
+{ MIXPANEL_KEY } = require '../../config'
+Mixpanel = require 'mixpanel'
+mixpanel = Mixpanel.init MIXPANEL_KEY
 
 scrapers = {}
 for f in fs.readdirSync('./lib/scrape/scrapers')
@@ -30,7 +34,6 @@ dal.connect =>
   
   # Scrape ALL THE PAGES with  with `coffee lib/scrape pages`
   else if process.argv[2] is 'pages'
-    console.log 'mooo'
     callback = _.after _.keys(scrapers).length, -> 
       console.log "DONE SCRAPING PAGES FOR ALL SOURCES!"
       process.exit()
@@ -45,3 +48,9 @@ dal.connect =>
       process.exit()
     for name, scraper of scrapers
       scraper.populateEmptyListings 1000, callback
+
+process.on 'uncaughtException', (err) ->
+  mixpanel.track 'Error uncaught exception',
+    err: err.toString()
+    stack: err.stack
+  process.exit 1

@@ -2,6 +2,7 @@ Scraper = require '../scraper'
 accounting = require 'accounting'
 
 module.exports = new Scraper
+  engines: { list: 'request', item: 'request' }
   listUrl: (page) ->
     "http://apartable.com/apartments?broker_fee=false&city=New+York" +
     "&page=#{page}&state=NY&utf8=%E2%9C%93"

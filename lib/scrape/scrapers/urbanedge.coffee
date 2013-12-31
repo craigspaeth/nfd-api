@@ -4,7 +4,7 @@ _ = require 'underscore'
 _.mixin require('underscore.string').exports()
 
 module.exports = new Scraper
-  startPage: 0
+  engines: { list: 'request', item: 'request' }
   listUrl: (page) ->
     "http://www.urbanedgeny.com/results?page=#{page}&nh1=90&p[min]=&p[max]=&bd=&ba="
   listItemSelector: '.property-title a'

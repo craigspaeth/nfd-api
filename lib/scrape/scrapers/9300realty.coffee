@@ -4,6 +4,7 @@ _ = require 'underscore'
 _.mixin require('underscore.string').exports()
 
 module.exports = new Scraper
+  engines: { list: 'request', item: 'request' }
   listUrl: (page) -> "http://www.9300realty.com/index.cfm?page=allRentals"
   listItemSelector: '.dspListings2Elements > a:first-child'
   $ToListing: ($) ->

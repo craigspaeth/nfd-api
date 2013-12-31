@@ -21,7 +21,8 @@
     "newrelic": "*",
     "request": "*",
     "cheerio": "*",
-    "jsdom": "*"
+    "jsdom": "*",
+    "mixpanel": "*"
   },
 	"devDependencies": {
 		"mocha": "*",
