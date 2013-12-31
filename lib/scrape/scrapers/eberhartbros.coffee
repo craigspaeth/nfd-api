@@ -17,7 +17,9 @@ opts =
     baths: parseInt $('table[width="300px"] tr:nth-child(4) td:nth-child(2)').text()
     location:
       name: _.clean $('span[style="font-size:1em; font-weight:bold; color:#048a7a;"]').text()
-    pictures: $('#gallery li a').map(-> $(@).attr 'href').toArray()
+    pictures: $('#gallery li a').map(->
+      "http://www.eberhartbros.com/" + $(@).attr 'href'
+    ).toArray()
 
 module.exports = new Scraper opts
 

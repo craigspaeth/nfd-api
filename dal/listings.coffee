@@ -198,7 +198,7 @@ storeBadHostData = (host, hash, callback) =>
     callback()
   @collection.count { url: { $regex: host }, rent: { $in: [0, null] } }, (err, count) ->
     return callback(err) if err
-    hash[host]['No Rent'] = count unless err
+    hash[host]['No rent'] = count unless err
     callback()
   @collection.count { url: { $regex: host }, beds: { $in: [0, null] } }, (err, count) ->
     return callback(err) if err
