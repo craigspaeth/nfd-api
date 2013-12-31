@@ -205,11 +205,11 @@ module.exports = class Scraper
   saveListing: (url, listing, callback) ->
     Listings.upsert listing, (err, docs) =>
       return callback err if err
-      console.log "Saved listing from #{url}.", docs[0]
+      console.log "Saved listing from #{url}.", listing
       mixpanel.track 'Scraped listing',
         host: @host
         url: url
-        doc: docs[0]
+        doc: listing
       callback()
   
   # No-op that converts a browser window context to a listing object close to our schema.

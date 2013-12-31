@@ -1,9 +1,9 @@
 Listings = require '../dal/listings'
 
-module.exports =
-
-'GET /':
-  cb: (req, res) ->
-    Listings.countBad (err, badCount, total) ->
-      res.send "Welcome to No Fee Digs API. " + 
-               "There are #{total - badCount} good listings out of #{total} total listings."
+@index = (req, res) ->
+  Listings.countBad (err, badCount, total) ->
+    Listings.badDataHash (err, badHash) ->
+      res.render 'index',
+        badCount: badCount
+        badHash: badHash
+        total: total

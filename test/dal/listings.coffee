@@ -195,3 +195,7 @@ describe 'listings', ->
         done()
       listings.collection.count.args[0][0] null, 100
       listings.collection.count.args[1][1] null, 50
+
+  describe '#badDataHash', ->
+
+    it 'scans the database and maps it into a hash of bad data easy to parse'

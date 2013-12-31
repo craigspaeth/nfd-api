@@ -10,14 +10,12 @@ app = module.exports = express()
 # Add CORs
 app.use cors()
 
+# Setup views
+app.set 'views', __dirname + '/views/'
+app.set 'view engine', 'jade'
+
 # Attach routes to app
-routers = for file in fs.readdirSync('./routes') when file.match /\.coffee$/
-           require(__dirname + '/routes/' + file)
-for router in routers
-  for route, hash of router
-    method = route.split(' ')[0].toLowerCase()
-    routeName = route.split(' ').slice(1).join(' ')
-    app[method] routeName, hash.cb
+app.get '/', require('./routes/index').index
 
 # Connect dal to mongo and start server
 console.log 'starting'

@@ -32,6 +32,7 @@
 _ = require 'underscore'
 { ObjectID } = mongodb = require 'mongodb'
 @gm = require 'googlemaps'
+scrapers = require '../lib/scrape/scrapers'
 
 DEFAULT_PAGE_SIZE = 50
 NEIGHBORHOOD_GROUPS = require '../lib/neighborhood-groups'
@@ -145,17 +146,7 @@ GOOD_PARAMS = @GOOD_PARAMS =
           (groups[groupName] ?= []).push(neighborhood)
     callback null, groups
 
-# Gives a count of listings by their sources
-# 
-# @param {String} hostnames
-# @param {Function} callback Calls back with (err, hash)
-
-@sourceCounts = (hostnames, callback) ->
-  hash = {}
-  cb = _.after hostnames.length, -> callback null, hash
-  addCount(hash, hostname, cb) for hostname in hostnames
-
-addCount = (hash, hostname, callback) ->
+addCount = (hash, hostname, callback) =>
   @collection.count { url: { $regex: hostname } }, (err, count) ->
     hash[hostname] = count
     callback()
@@ -179,3 +170,45 @@ addCount = (hash, hostname, callback) ->
   now = new Date()
   date = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
   @collection.remove { dateScraped: { $lte: date } }, callback
+
+# Maps the sources of listings into a hash displaying information about
+# the number of listings missing data, e.g.
+# 
+# swmanagement: {
+#   "No pictures": 580
+# },
+# streeteasy: {
+#   "Null bedrooms": 100
+# }
+# 
+# @param {Function} callback Calls back with (err, hash)
+
+@badDataHash = (callback) ->
+  hash = {}
+  hosts = _.keys(scrapers)
+  cb = _.after hosts.length, (err) -> callback err, hash
+  storeBadHostData(host, hash, cb) for host in hosts
+
+storeBadHostData = (host, hash, callback) =>
+  callback = _.after 2, callback
+  hash[host] ?= {}
+  @collection.count { url: { $regex: host }, pictures: { $in: [[], null] } }, (err, count) ->
+    return callback(err) if err
+    hash[host]['No pictures'] = count
+    callback()
+  @collection.count { url: { $regex: host }, rent: { $in: [0, null] } }, (err, count) ->
+    return callback(err) if err
+    hash[host]['No Rent'] = count unless err
+    callback()
+  @collection.count { url: { $regex: host }, beds: { $in: [0, null] } }, (err, count) ->
+    return callback(err) if err
+    hash[host]['No bedrooms'] = count unless err
+    callback()
+  @collection.count { url: { $regex: host }, baths: { $in: [0, null] } }, (err, count) ->
+    return callback(err) if err
+    hash[host]['No bathrooms'] = count unless err
+    callback()
+  @collection.count { url: { $regex: host }, 'location.name': { $ne: null } }, (err, count) ->
+    return callback(err) if err
+    hash[host]['Missing location'] = count unless err
+    callback()

@@ -22,7 +22,8 @@
     "request": "*",
     "cheerio": "*",
     "jsdom": "*",
-    "mixpanel": "*"
+    "mixpanel": "*",
+    "jade": "*"
   },
 	"devDependencies": {
 		"mocha": "*",

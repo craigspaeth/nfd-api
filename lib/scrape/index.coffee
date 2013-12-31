@@ -8,17 +8,11 @@
 
 dal = require '../../dal'
 _ = require 'underscore'
-fs = require 'fs'
-{ basename } = require 'path'
 { SCRAPE_TOTAL_PAGES } = require '../../config'
 { MIXPANEL_KEY } = require '../../config'
 Mixpanel = require 'mixpanel'
 mixpanel = Mixpanel.init MIXPANEL_KEY
-
-scrapers = {}
-for f in fs.readdirSync('./lib/scrape/scrapers')
-  s = require "./scrapers/#{f}"
-  scrapers[basename f, '.coffee'] = s if s.scrapePages?
+scrapers = require './scrapers'
 
 return unless module is require.main
 dal.connect =>
@@ -50,6 +44,9 @@ dal.connect =>
       scraper.populateEmptyListings 1000, callback
 
 process.on 'uncaughtException', (err) ->
+  console.log 'ERROR: uncaught exception',
+    err: err.toString()
+    stack: err.stack
   mixpanel.track 'Error uncaught exception',
     err: err.toString()
     stack: err.stack

@@ -1,0 +1,12 @@
+doctype html
+html(lang="en")
+  head
+    title NoFeeDigs API
+  body
+    h1 There are #{total - badCount} good listings out of #{total} total listings.
+    for problems, host in badHash
+      h2= host
+      for count, problem in problems
+        b #{problem}: 
+        = count
+        br
