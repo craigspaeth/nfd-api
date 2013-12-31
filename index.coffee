@@ -15,7 +15,14 @@ app.set 'views', __dirname + '/views/'
 app.set 'view engine', 'jade'
 
 # Attach routes to app
-app.get '/', require('./routes/index').index
+routers = for file in fs.readdirSync('./routes') when file.match /\.coffee$/
+           require(__dirname + '/routes/' + file)
+for router in routers
+  for route, hash of router
+    console.log route, hash
+    method = route.split(' ')[0].toLowerCase()
+    routeName = route.split(' ').slice(1).join(' ')
+    app[method] routeName, hash.cb
 
 # Connect dal to mongo and start server
 console.log 'starting'
