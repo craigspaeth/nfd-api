@@ -185,7 +185,7 @@ addCount = (hash, hostname, callback) =>
 
 @badDataHash = (callback) ->
   hash = {}
-  hosts = _.keys(scrapers)
+  hosts = _.uniq (scraper.split('-')[0] for scraper of scrapers)
   cb = _.after hosts.length, (err) -> callback err, hash
   storeBadHostData(host, hash, cb) for host in hosts
 

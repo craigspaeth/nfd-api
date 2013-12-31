@@ -199,3 +199,4 @@ describe 'listings', ->
   describe '#badDataHash', ->
 
     it 'scans the database and maps it into a hash of bad data easy to parse'
+    it 'splits the scraper name by a dash so it handles the nytimes-newyork scrapers'
