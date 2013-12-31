@@ -11,7 +11,7 @@ html(lang="en")
       div( style='width: ' + total + 'px; background: blue; height: 3px; margin: 10px 0;' )
       for count, problem in problems
         if count > 0 && problem != 'Total'
-          b( style='color: rgb(' + Math.round(((count / total) * 255)) + ',0,0)' )= problem
+          b( style='color: rgb(' + Math.round(((count / total) * 500)) + ',0,0)' )= problem
           | :  
           = count
           br

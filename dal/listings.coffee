@@ -202,7 +202,7 @@ storeSourceData = (host, hash, callback) =>
   storeCount 'No rent', { rent: { $in: [0, null] } }
   storeCount 'No bedrooms', { beds: { $in: [0, null] } }
   storeCount 'No bathrooms', { baths: { $in: [0, null] } }
-  storeCount 'Missing location', { 'location.name': { $ne: null } }
+  storeCount 'Missing location', { 'location.name': $in: ['', null] }
   storeCount 'Total', {}
   storeCount 'Undefined in pictures', { pictures: { $regex: 'undefined' } }
   callback = _.after total, callback
