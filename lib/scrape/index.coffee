@@ -47,7 +47,7 @@ process.on 'uncaughtException', (err) ->
   console.log 'ERROR: uncaught exception',
     err: err.toString()
     stack: err.stack
-  mixpanel.track 'Error uncaught exception',
+  mixpanel.track 'Error uncaught exception', {
     err: err.toString()
     stack: err.stack
-  process.exit 1
+  }, -> process.exit 1
