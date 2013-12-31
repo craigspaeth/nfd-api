@@ -172,7 +172,7 @@ addCount = (hash, hostname, callback) =>
   @collection.remove { dateScraped: { $lte: date } }, callback
 
 # Maps the sources of listings into a hash displaying information about
-# the number of listings missing data, e.g.
+# the listings groupped by their source, e.g.
 # 
 # swmanagement: {
 #   "No pictures": 580
@@ -183,32 +183,26 @@ addCount = (hash, hostname, callback) =>
 # 
 # @param {Function} callback Calls back with (err, hash)
 
-@badDataHash = (callback) ->
+@sourcesHash = (callback) ->
   hash = {}
   hosts = _.uniq (scraper.split('-')[0] for scraper of scrapers)
   cb = _.after hosts.length, (err) -> callback err, hash
-  storeBadHostData(host, hash, cb) for host in hosts
+  storeSourceData(host, hash, cb) for host in hosts
 
-storeBadHostData = (host, hash, callback) =>
-  callback = _.after 2, callback
+storeSourceData = (host, hash, callback) =>
   hash[host] ?= {}
-  @collection.count { url: { $regex: host }, pictures: { $in: [[], null] } }, (err, count) ->
-    return callback(err) if err
-    hash[host]['No pictures'] = count
-    callback()
-  @collection.count { url: { $regex: host }, rent: { $in: [0, null] } }, (err, count) ->
-    return callback(err) if err
-    hash[host]['No rent'] = count unless err
-    callback()
-  @collection.count { url: { $regex: host }, beds: { $in: [0, null] } }, (err, count) ->
-    return callback(err) if err
-    hash[host]['No bedrooms'] = count unless err
-    callback()
-  @collection.count { url: { $regex: host }, baths: { $in: [0, null] } }, (err, count) ->
-    return callback(err) if err
-    hash[host]['No bathrooms'] = count unless err
-    callback()
-  @collection.count { url: { $regex: host }, 'location.name': { $ne: null } }, (err, count) ->
-    return callback(err) if err
-    hash[host]['Missing location'] = count unless err
-    callback()
+  total = 0
+  storeCount = (key, query) =>
+    @collection.count _.extend({ url: { $regex: host } }, query), (err, count) ->
+      return callback(err) if err
+      hash[host][key] = count
+      callback()
+    total++
+  storeCount 'No pictures', { pictures: { $in: [[], null] } }
+  storeCount 'No rent', { rent: { $in: [0, null] } }
+  storeCount 'No bedrooms', { beds: { $in: [0, null] } }
+  storeCount 'No bathrooms', { baths: { $in: [0, null] } }
+  storeCount 'Missing location', { 'location.name': { $ne: null } }
+  storeCount 'Total', {}
+  storeCount 'Undefined in pictures', { pictures: { $regex: 'undefined' } }
+  callback = _.after total, callback

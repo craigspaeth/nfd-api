@@ -4,10 +4,9 @@ module.exports =
 
 'GET /':
   cb: (req, res) ->
-    console.log 'index'
     Listings.countBad (err, badCount, total) ->
-      Listings.badDataHash (err, badHash) ->
+      Listings.sourcesHash (err, sourcesHash) ->
         res.render 'index',
           badCount: badCount
-          badHash: badHash
+          sourcesHash: sourcesHash
           total: total
