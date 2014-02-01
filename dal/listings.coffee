@@ -168,7 +168,7 @@ addCount = (hash, hostname, callback) =>
 
 @dropOld = (callback) ->
   now = new Date()
-  date = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
+  date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 15)
   @collection.remove { dateScraped: { $lte: date } }, callback
 
 # Maps the sources of listings into a hash displaying information about
