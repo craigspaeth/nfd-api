@@ -16,7 +16,7 @@ bcrypt = require 'bcrypt'
 { isEmail } = require 'validator'
 { BCRYPT_SALT_LENGTH } = require '../config'
 
-# Creates a user.
+# Creates a user and ensures they're not a duplicate based on email and social data.
 # 
 # @param {Object} user User data
 # @param {Function} callback Calls back with (err, doc)
@@ -25,8 +25,10 @@ bcrypt = require 'bcrypt'
   return cb err if err = validate user
   sanitize user, (err, user) =>
     return cb err if err
-    @collection.insert user, (err, docs) ->
-      cb err, docs[0]
+    @collection.findOne { email: user.email }, (err, doc) =>
+      return cb new Error "User already exists." if doc
+      @collection.insert user, (err, docs) ->
+        cb err, docs[0]
 
 sanitize = (doc, cb) ->
   user = _.pick(doc, 'email', 'password', 'twitterData', 'facebookData')

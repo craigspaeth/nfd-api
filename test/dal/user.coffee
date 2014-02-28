@@ -9,7 +9,9 @@ describe 'users', ->
   beforeEach ->
     Users.__set__ 'bcrypt', hash: (pwd, len, cb) -> cb null, 'foohash'
     Users.collection = collectionStub()
-      
+    Users.collection.findOne = sinon.stub()
+    Users.collection.findOne.callsArgWith 1, null, null
+
   describe "#insert", ->
 
     it 'creates a new user', ->
@@ -29,3 +31,10 @@ describe 'users', ->
     it 'hashes the password', ->
       Users.insert { email: 'craigspaeth@gmail.com', password: 'foobarbaz' }
       Users.collection.insert.args[0][0].password.should.equal 'foohash'
+
+    it 'throws user already exists if the same email', (done) ->
+      Users.collection.findOne.callsArgWith 1, null, {}
+      Users.insert { email: 'craigspaeth@gmail.com', password: 'footothebar' }, (err) ->
+        err.toString().should.include 'already'
+        done()
+      Users.collection.findOne.args[0][0].email.should.equal 'craigspaeth@gmail.com'
