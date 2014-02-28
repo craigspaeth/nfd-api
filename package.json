@@ -23,7 +23,8 @@
     "cheerio": "*",
     "jsdom": "*",
     "mixpanel": "*",
-    "jade": "*"
+    "jade": "*",
+    "bcrypt": "*"
   },
 	"devDependencies": {
 		"mocha": "*",
