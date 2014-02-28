@@ -11,8 +11,10 @@
 # }
 
 _ = require 'underscore'
+bcrypt = require 'bcrypt'
 { ObjectID } = mongodb = require 'mongodb'
 { isEmail } = require 'validator'
+{ BCRYPT_SALT_LENGTH } = require '../config'
 
 # Creates a user.
 # 
@@ -21,11 +23,17 @@ _ = require 'underscore'
 
 @insert = (user, cb = ->) =>
   return cb err if err = validate user
-  @collection.insert sanitize(user), (err, docs) ->
-    cb err, docs[0]
+  sanitize user, (err, user) =>
+    return cb err if err
+    @collection.insert user, (err, docs) ->
+      cb err, docs[0]
 
-sanitize = (doc) ->
-  _.pick(doc, 'email', 'password', 'twitterData', 'facebookData')
+sanitize = (doc, cb) ->
+  user = _.pick(doc, 'email', 'password', 'twitterData', 'facebookData')
+  bcrypt.hash doc.password, BCRYPT_SALT_LENGTH, (err, hash) ->
+    return cb err if err
+    user.password = hash
+    cb null, user
 
 validate = (doc) ->
   return new Error "Invalid email" unless isEmail doc.email
