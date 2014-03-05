@@ -11,6 +11,11 @@ scrape-listings:
 
 scrape: scrape-pages scrape-listings geocode
 
+dbcopy:
+	mongodump --host paulo.mongohq.com:10085 --db app17949403 -u heroku -p dj6TGZX-pcpitvzXzgzC -c listings
+	mongorestore dump/app17949403/listings.bson -c listings -d nfd --drop
+	rm -rf dump/
+
 geocode:
 	$(BIN)/coffee lib/gecode-listings.coffee
 
