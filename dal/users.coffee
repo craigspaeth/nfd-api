@@ -4,6 +4,7 @@
 # password, preferences, etc.
 # 
 # Schema: {
+#   name: String,
 #   email: String,
 #   password: String,
 #   twitterData: Object,
@@ -16,10 +17,29 @@ bcrypt = require 'bcrypt'
 { isEmail } = require 'validator'
 { BCRYPT_SALT_LENGTH } = require '../config'
 
+# Convenient alias to mongo findOne.
+# 
+# @param {Object} query Pass in a string for ID or an object for mongo query
+# @param {Function} callback Calls back with (err, doc)
+
+@findOne = (query, callback) =>
+  query = { _id: new ObjectID(id) } if _.isString query
+  @collection.findOne query, callback
+
+# Compares the decrypted password matches the encrypted password on the user.
+# 
+# @param {Object} user User data
+# @param {String} password Unencrypted password string
+# @param {Function} cb Calls back with (err, doc)
+
+@comparePassword = (user, password, cb) ->
+  bcrypt.compare password, user.password, cb 
+
+
 # Creates a user and ensures they're not a duplicate based on email and social data.
 # 
 # @param {Object} user User data
-# @param {Function} callback Calls back with (err, doc)
+# @param {Function} cb Calls back with (err, doc)
 
 @insert = (user, cb = ->) =>
   return cb err if err = validate user
@@ -31,7 +51,7 @@ bcrypt = require 'bcrypt'
         cb err, docs[0]
 
 sanitize = (doc, cb) ->
-  user = _.pick(doc, 'email', 'password', 'twitterData', 'facebookData')
+  user = _.pick(doc, 'email', 'password', 'twitterData', 'facebookData', 'name')
   bcrypt.hash doc.password, BCRYPT_SALT_LENGTH, (err, hash) ->
     return cb err if err
     user.password = hash
@@ -47,6 +67,6 @@ validate = (doc) ->
 # @param {Object} user User document
 
 @toJSON = (doc) ->
-  _.extend doc,
+  _.extend _.omit(doc, 'password'),
     id: doc._id
     _id: undefined

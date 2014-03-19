@@ -25,4 +25,12 @@ drop-old:
 test:
 	$(BIN)/mocha $(shell find test -name '*.coffee' -not -path 'test/helpers/*' -not -path 'test/scrapers/*')
 
+commit:
+	git add .
+	git commit -a -m 'deploying...'
+	git push git@github.com:craigspaeth/nfd-api.git master
+
+deploy: commit
+	git push git@heroku.com:nfd-api-staging.git master
+
 .PHONY: test

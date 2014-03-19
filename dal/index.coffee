@@ -23,10 +23,9 @@
 fs = require 'fs'
 path = require 'path'
 { MongoClient } = mongodb = require 'mongodb'
-{ MONGO_URL } = require '../config' 
 
-@connect = (callback) =>
-  MongoClient.connect MONGO_URL, (err, db) =>
+@connect = (mongoUrl, callback) =>
+  MongoClient.connect mongoUrl, (err, db) =>
     return callback err if err
     for filename in fs.readdirSync(__dirname) when not filename.match /index.coffee/
       collectionName = path.basename filename, '.coffee'

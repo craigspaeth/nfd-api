@@ -24,12 +24,15 @@
     "jsdom": "*",
     "mixpanel": "*",
     "jade": "*",
-    "bcrypt": "*"
+    "bcrypt": "*",
+    "passport": "*",
+    "passport-local": "*"
   },
 	"devDependencies": {
 		"mocha": "*",
 		"should": "*",
 		"sinon": "*",
-    "rewire": "*"
+    "rewire": "*",
+    "superagent": "*"
 	}
 }
