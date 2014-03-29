@@ -24,9 +24,7 @@
     "jsdom": "*",
     "mixpanel": "*",
     "jade": "*",
-    "bcrypt": "*",
-    "passport": "*",
-    "passport-local": "*"
+    "bcrypt": "*"
   },
 	"devDependencies": {
 		"mocha": "*",

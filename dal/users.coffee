@@ -8,7 +8,8 @@
 #   email: String,
 #   password: String,
 #   twitterData: Object,
-#   facebookData: Object
+#   facebookData: Object,
+#   accessToken: String
 # }
 
 _ = require 'underscore'
@@ -16,15 +17,7 @@ bcrypt = require 'bcrypt'
 { ObjectID } = mongodb = require 'mongodb'
 { isEmail } = require 'validator'
 { BCRYPT_SALT_LENGTH } = require '../config'
-
-# Convenient alias to mongo findOne.
-# 
-# @param {Object} query Pass in a string for ID or an object for mongo query
-# @param {Function} callback Calls back with (err, doc)
-
-@findOne = (query, callback) =>
-  query = { _id: new ObjectID(id) } if _.isString query
-  @collection.findOne query, callback
+require('./base').extend this
 
 # Compares the decrypted password matches the encrypted password on the user.
 # 
@@ -34,7 +27,6 @@ bcrypt = require 'bcrypt'
 
 @comparePassword = (user, password, cb) ->
   bcrypt.compare password, user.password, cb 
-
 
 # Creates a user and ensures they're not a duplicate based on email and social data.
 # 

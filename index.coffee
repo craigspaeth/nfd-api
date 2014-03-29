@@ -1,22 +1,16 @@
-require 'newrelic'
+{ PORT, SESSION_SECRET, MONGO_URL, NODE_ENV } = require './config'
+require 'newrelic' if NODE_ENV isnt 'development'
 _ = require 'underscore'
-passport = require 'passport'
 dal = require './dal'
 fs = require 'fs'
 express = require 'express'
 cors = require 'cors'
-{ PORT, SESSION_SECRET, MONGO_URL } = require './config'
-require './lib/passport'
 
 app = module.exports = express()
 
 # Generic express setup
 app.use cors()
-app.use express.cookieParser()
 app.use express.bodyParser()
-app.use express.session secret: SESSION_SECRET
-app.use passport.initialize()
-app.use passport.session()
 
 # Setup views
 app.set 'views', __dirname + '/views/'

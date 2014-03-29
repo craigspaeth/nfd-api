@@ -33,6 +33,7 @@ _ = require 'underscore'
 { ObjectID } = mongodb = require 'mongodb'
 @gm = require 'googlemaps'
 scrapers = require '../lib/scrape/scrapers'
+require('./base').extend this
 
 DEFAULT_PAGE_SIZE = 50
 NEIGHBORHOOD_GROUPS = require '../lib/neighborhood-groups'
@@ -51,14 +52,6 @@ GOOD_PARAMS = @GOOD_PARAMS =
   callback = _.after listings.length, callback
   for listing in listings
     @collection.update { url: listing.url }, listing, { upsert: true }, callback
-
-# Convenient alias to mongo findOne.
-# 
-# @param {String} id
-# @param {Function} callback Calls back with (err, doc)
-
-@findOne = (id, callback) =>
-  @collection.findOne { _id: new ObjectID(id) }, callback
 
 # A `find` operation that is allowed by users. Pass in params that would be
 # sent via query params and it'll translate that into the right mongo queries.
