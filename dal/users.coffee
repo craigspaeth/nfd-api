@@ -55,7 +55,6 @@ Base.extend this
   user = _.pick(data, 'email', 'password', 'twitterData', 'facebookData', 
                       'name', 'alerts', 'accessToken')
   for alert, i in user.alerts ? []
-    console.log alert.query.neighborhoods
     delete alert.query.neighborhoods if alert.query.neighborhoods.length is 0
     user.alerts[i] =
       name: alert.name
