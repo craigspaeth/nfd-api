@@ -23,18 +23,19 @@ _ = require 'underscore'
 # @param {Function} callback
 
 @update = (query, attrs, callback) ->
-  find = =>
-    @collection.findAndModify idQuery(query), [], { $set: attrs }, {}, callback
+  update = =>
+    @collection.findAndModify idQuery(query), [], { $set: attrs }, {}, ->
+      callback arguments...
   if @sanitize?
     @sanitize attrs, (err, a) ->
       attrs = a
-      find()
+      update()
   else
-    find()
+    update()
 
 # Returns a mongo query object if query is an ID string.
 # 
 # @param {Object|String} query
 
 idQuery = (query) ->
-  if _.isString(query) then { _id: new ObjectID(query) } else query
+  if query.toString().length is 24 then { _id: new ObjectID(query.toString()) } else query
