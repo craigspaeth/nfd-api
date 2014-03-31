@@ -81,22 +81,27 @@ validate = (doc) ->
 
 # Iterates through users, checks their alerts, and uses mandrill to send out 
 # emails of listings within the criteria that were scraped in the last day.
+# 
+# @param {Function} Calls back with (err)
 
-@mailAlerts = =>
+@mailAlerts = (callback) =>
   console.log 'Mailing alerts'
   @collection.find(
     alerts: { $ne: [] }
     alerts: { $ne: null }
   ).toArray (err, users) =>
-    return console.warn err if err
+    return callback err if err
+    callback = _.after users.length, callback
     for user in users
       for alert in user.alerts
-        sendAlertMail alert, user
+        sendAlertMail alert, user, callback
 
-sendAlertMail = (alert, user) ->
+sendAlertMail = (alert, user, callback) ->
   console.log "Sending to #{user.name}..."
   Listings.find _.extend(alert.query, { sort: 'newest', size: 20 }), (err, listings) ->
-    return console.warn err if err
+    if err
+      console.warn err
+      return callback err        
     body = """
       Your latest no fee listings:
       
@@ -123,5 +128,8 @@ sendAlertMail = (alert, user) ->
                  ' , or bigger, apartments.'
         text: body
     , (err, resp) ->
-      return console.warn err if err
+      if err
+        console.warn err
+        return callback err
       console.log "Sent mail to #{user.email}."
+      callback()

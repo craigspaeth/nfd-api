@@ -2,4 +2,4 @@
 { mailAlerts } = require '../dal/users'
 dal = require '../dal'
 
-dal.connect MONGO_URL, -> mailAlerts()
+dal.connect MONGO_URL, -> mailAlerts -> process.exit()
