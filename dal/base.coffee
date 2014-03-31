@@ -6,7 +6,7 @@ _ = require 'underscore'
 { ObjectID } = mongodb = require 'mongodb'
 
 @extend = (context) ->
-  context[k] = _.bind(fn, context) for k, fn of _.omit _.clone module.exports, 'extend'
+  context[k] = _.bind(fn, context) for k, fn of _.omit _.clone(module.exports), 'extend'
 
 # Convenient alias to mongo findOne.
 # 
@@ -23,7 +23,14 @@ _ = require 'underscore'
 # @param {Function} callback
 
 @update = (query, attrs, callback) ->
-  @collection.findAndModify idQuery(query), [], { $set: attrs }, {}, callback
+  find = =>
+    @collection.findAndModify idQuery(query), [], { $set: attrs }, {}, callback
+  if @sanitize?
+    @sanitize attrs, (err, a) ->
+      attrs = a
+      find()
+  else
+    find()
 
 # Returns a mongo query object if query is an ID string.
 # 

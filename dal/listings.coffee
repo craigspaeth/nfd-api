@@ -10,7 +10,7 @@
 #   baths: Number,
 #   location: {
 #     name: String,
-#     formatted_address: String,
+#     formattedAddress: String,
 #     lat: Number,
 #     lng: Number,
 #     neighborhood: String
@@ -99,10 +99,10 @@ GOOD_PARAMS = @GOOD_PARAMS =
 @geocode = (listing, callback) =>
   @gm.geocode listing.location.name, (err, res) =>
     return callback(err) if err
-    firstResult = (result for result in res?.results when result.formatted_address.match 'NY')[0]
+    firstResult = (result for result in res?.results when result.formattedAddress.match 'NY')[0]
     return callback(res.status) unless firstResult
     listing.location = _.extend listing.location,
-      formatted_address: firstResult.formatted_address
+      formattedAddress: firstResult.formattedAddress
       lng: firstResult.geometry.location.lng
       lat: firstResult.geometry.location.lat
       neighborhood: (comp.short_name for comp in firstResult.address_components \

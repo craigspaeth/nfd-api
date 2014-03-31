@@ -24,7 +24,9 @@
     "jsdom": "*",
     "mixpanel": "*",
     "jade": "*",
-    "bcrypt": "*"
+    "bcrypt": "*",
+    "node-mandrill": "*",
+    "moment": "*"
   },
 	"devDependencies": {
 		"mocha": "*",

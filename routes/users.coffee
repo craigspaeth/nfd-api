@@ -1,4 +1,4 @@
-{ insert, toJSON, update } = require '../dal/users'
+{ insert, toJSON, update, findOne } = require '../dal/users'
 async = require 'async'
 ClientApplications = require '../dal/client-applications'
 crypto = require 'crypto'
@@ -22,9 +22,27 @@ module.exports =
       return next err if err
       res.send toJSON user
 
+'PUT /users/:id':
+  desc: """
+  Updates a user.
+  
+  Params:
+  *email*: User's email address when signing up through email.
+  *password*: User's password when signing up through email.
+  *alerts*: An array of { query: Object, name: String } hashes storing alerts for the user.
+  """
+  cb: [
+    auth.accessToken
+    (req, res, next) ->
+      return res.send 403, { error: 'Access denied.' } unless req.user.id.toString() is req.param('id')
+      update req.param('id'), _.pick(req.body, 'email', 'password', 'alerts'), (err, user) ->
+        return next err if err
+        res.send toJSON user
+  ]
+
 'POST /access-token':
   desc: """
-  Get an access token Logs in a user via email and password.
+  Get an access token & logs in a user via email and password.
   
   Params:
   *id*: Application client id
@@ -47,15 +65,15 @@ module.exports =
         accessToken: token = crypto.createHash('md5').update(Math.random().toString()).digest('hex')
       }, (err, user) ->
         return next err if err
-        res.send _.extend toJSON(req.user), accessToken: token
+        res.send _.extend toJSON(user), accessToken: token
   ]
 
 'GET /me':
   desc: """
-  Returns the current user json.
+  Returns the current user.
   
   Params:
-  *token*: Access token.
+  *accessToken*: Access token.
   """
   cb: [
     auth.accessToken

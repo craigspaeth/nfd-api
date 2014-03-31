@@ -33,4 +33,7 @@ commit:
 deploy: commit
 	git push git@heroku.com:nfd-api-staging.git master
 
+send-alerts:
+	$(BIN)/coffee lib/send-alerts.coffee
+
 .PHONY: test

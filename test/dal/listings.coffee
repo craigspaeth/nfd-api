@@ -90,7 +90,7 @@ describe 'listings', ->
               short_name: "East Harlem"
               types: ["neighborhood", "political"]
             ]
-            formatted_address: "245 East 124th Street, New York, NY 10035, USA"
+            formattedAddress: "245 East 124th Street, New York, NY 10035, USA"
             geometry:
               location:
                 lat: 40.802391
@@ -100,7 +100,7 @@ describe 'listings', ->
     it 'fetches the geocode data from google maps and injects it into the listing', (done) ->
       listings.gm = { geocode: sinon.stub() }
       listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
-        listing.location.formatted_address.should.equal(
+        listing.location.formattedAddress.should.equal(
           '245 East 124th Street, New York, NY 10035, USA'
         )
         listing.location.lng.should.equal -73.934573
@@ -115,7 +115,7 @@ describe 'listings', ->
               short_name: "East Harlem"
               types: ["neighborhood", "political"]
             ]
-            formatted_address: "245 East 124th Street, New York, NY 10035, USA"
+            formattedAddress: "245 East 124th Street, New York, NY 10035, USA"
             geometry:
               location:
                 lat: 40.802391
@@ -132,13 +132,13 @@ describe 'listings', ->
     it 'does not geocode non-new york cities', (done) ->
       listings.gm = { geocode: sinon.stub() }
       listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
-        listing.location.formatted_address.should.equal 'Kewl York, New York, NY'
+        listing.location.formattedAddress.should.equal 'Kewl York, New York, NY'
         done()
       listings.gm.geocode.args[0][1] null,
         results: [
             {
               address_components: []
-              formatted_address: "245 East 124th Street, Cincinnati OH"
+              formattedAddress: "245 East 124th Street, Cincinnati OH"
             }
             {
               address_components: [
@@ -146,7 +146,7 @@ describe 'listings', ->
                 short_name: "East Harlem"
                 types: ["neighborhood", "political"]
               ]
-              formatted_address: "Kewl York, New York, NY"
+              formattedAddress: "Kewl York, New York, NY"
               geometry:
                 location:
                   lat: 40.802391
@@ -154,7 +154,7 @@ describe 'listings', ->
             }
             {
               address_components: []
-              formatted_address: "245 East 124th Street, Cincinnati OH"
+              formattedAddress: "245 East 124th Street, Cincinnati OH"
             }
           ]
         
