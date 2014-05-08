@@ -26,7 +26,8 @@
     "jade": "*",
     "bcrypt": "*",
     "node-mandrill": "*",
-    "moment": "*"
+    "moment": "*",
+    "morgan": "*"
   },
 	"devDependencies": {
 		"mocha": "*",

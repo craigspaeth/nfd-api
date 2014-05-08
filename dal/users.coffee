@@ -15,9 +15,10 @@
 #   ]
 # }
 
-{ BCRYPT_SALT_LENGTH, MANDRILL_APIKEY } = require '../config'
+{ BCRYPT_SALT_LENGTH, MANDRILL_APIKEY, CLIENT_URL } = require '../config'
 _ = require 'underscore'
 _.mixin require 'underscore'
+crypto = require 'crypto'
 bcrypt = require 'bcrypt'
 mandrill = require('node-mandrill')(MANDRILL_APIKEY)
 moment = require 'moment'
@@ -37,6 +38,34 @@ Base.extend this
 @comparePassword = (user, password, cb) ->
   bcrypt.compare password, user.password, cb 
 
+# Sets a temporary accessToken on the user and emails them a reset link.
+# 
+# @param {String|ObjectID} id User id
+# @param {Function} cb Calls back with (err, doc)
+
+@resetPassword = (email, cb) =>
+  @findOne { email: email }, (err, user) =>
+    return callback err if err
+    @createAccessToken user, (err, user) ->
+      return callback err if err
+      mandrill '/messages/send',
+        message:
+          to: [{ email: user.email }]
+          from_email: 'nofeedigs@gmail.com'
+          subject: "Reset your password."
+          text: "Follow this link to reset your password: #{CLIENT_URL}/reset-password?accessToken=#{user.accessToken}&_id=#{user._id}"
+      , cb
+
+# Generates & saves a new access token on the user.
+# 
+# @param {Object} user
+# @param {Function} cb Calls back with (err, doc)
+
+@createAccessToken = (user, cb) =>
+  @update user._id, {
+    accessToken: token = crypto.createHash('md5').update(Math.random().toString()).digest('hex')
+  }, cb
+
 # Creates a user and ensures they're not a duplicate based on email and social data.
 # 
 # @param {Object} user User data
@@ -54,8 +83,9 @@ Base.extend this
 @sanitize = (data, cb) ->
   user = _.pick(data, 'email', 'password', 'twitterData', 'facebookData', 
                       'name', 'alerts', 'accessToken')
-  for alert, i in user.alerts ? []
-    delete alert.query.neighborhoods if alert.query.neighborhoods.length is 0
+  user.alerts ?= []
+  for alert, i in user.alerts
+    delete alert.query.neighborhoods if alert.query.neighborhoods?.length is 0
     user.alerts[i] =
       name: alert.name
       query: _.pick(alert.query, 'neighborhoods', 'bed-min', 'bath-min')
@@ -66,8 +96,8 @@ Base.extend this
     cb null, user
 
 validate = (doc) ->
-  return new Error "Invalid email" unless isEmail doc.email
-  return new Error "Password too short" unless doc.password?.length > 6
+  return new Error "Invalid email" if doc.email and not isEmail doc.email
+  return new Error "Password too short" if doc.password and doc.password?.length < 6
   return
 
 # Converts a raw user document into a JSON hash to be read in our API.
@@ -75,9 +105,7 @@ validate = (doc) ->
 # @param {Object} user User document
 
 @toJSON = (doc) ->
-  _.extend _.omit(doc, 'password'),
-    id: doc._id
-    _id: undefined
+  _.omit(doc, 'password')
 
 # Iterates through users, checks their alerts, and uses mandrill to send out 
 # emails of listings within the criteria that were scraped in the last day.

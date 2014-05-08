@@ -149,11 +149,7 @@ addCount = (hash, hostname, callback) =>
 # @param {Object} docs Array or object of listing documents
 
 @toJSON = (docs) ->
-  schema = (doc) ->
-    _.extend doc,
-      id: doc._id
-      _id: undefined
-  if _.isArray(docs) then (schema(doc) for doc in docs) else schema(docs)
+  if _.isArray(docs) then (doc for doc in docs) else schema(docs)
 
 # Drops listings older than a month to keep things fresh.
 # 

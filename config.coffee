@@ -1,6 +1,7 @@
 module.exports =
   
   NODE_ENV:              'development'
+  CLIENT_URL:            'http://localhost:3001'
   MONGO_URL:             'mongodb://127.0.0.1:27017/nfd'
   PORT:                  3000
   SCRAPE_PER_MINUTE:     10

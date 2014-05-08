@@ -1,7 +1,6 @@
-{ insert, toJSON, update, findOne } = require '../dal/users'
+{ insert, toJSON, update, findOne, resetPassword, createAccessToken } = require '../dal/users'
 async = require 'async'
 ClientApplications = require '../dal/client-applications'
-crypto = require 'crypto'
 auth = require '../lib/middleware/auth'
 _ = require 'underscore'
 
@@ -34,9 +33,23 @@ module.exports =
   cb: [
     auth.accessToken
     (req, res, next) ->
-      return res.send 403, { error: 'Access denied.' } unless req.user.id.toString() is req.param('id')
-      update req.param('id'), _.pick(req.body, 'email', 'password', 'alerts'), (err, user) ->
+      return res.send 403, { error: 'Access denied.' } unless req.user._id.toString() is req.param('id')
+      update req.param('id'), req.body, (err, user) ->
         return next err if err
+        res.send toJSON user
+  ]
+
+'GET /users/:id':
+  desc: """
+  Returns a user.
+  
+  Params:
+  *accessToken*: Access token.
+  """
+  cb: [
+    auth.accessToken
+    (req, res, next) ->
+      findOne req.params.id, (err, user) ->
         res.send toJSON user
   ]
 
@@ -61,22 +74,19 @@ module.exports =
         next()
     , auth.email
     (req, res) ->
-      update req.user.id, {
-        accessToken: token = crypto.createHash('md5').update(Math.random().toString()).digest('hex')
-      }, (err, user) ->
+      createAccessToken req.user, (err, user) ->
         return next err if err
-        res.send _.extend toJSON(user), accessToken: token
+        res.send toJSON user
   ]
 
-'GET /me':
+'POST /users/reset-password':
   desc: """
-  Returns the current user.
+  Sets a temporary accessToken on the user and emails them a reset link.
   
   Params:
-  *accessToken*: Access token.
+  *email*: User's email address.
   """
-  cb: [
-    auth.accessToken
-    (req, res, next) ->
-      res.send toJSON req.user
-    ]
+  cb: (req, res, next) ->
+    resetPassword req.param('email'), (err, resp) ->
+      return next err if err
+      res.send resp

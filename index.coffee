@@ -5,12 +5,14 @@ dal = require './dal'
 fs = require 'fs'
 express = require 'express'
 cors = require 'cors'
+logger = require 'morgan'
 
 app = module.exports = express()
 
 # Generic express setup
 app.use cors()
 app.use express.bodyParser()
+app.use logger()
 
 # Setup views
 app.set 'views', __dirname + '/views/'
