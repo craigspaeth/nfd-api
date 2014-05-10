@@ -6,7 +6,8 @@ _ = require 'underscore'
 { ObjectID } = mongodb = require 'mongodb'
 
 @extend = (context) ->
-  context[k] = _.bind(fn, context) for k, fn of _.omit _.clone(module.exports), 'extend'
+  for k, fn of _.omit _.clone(module.exports), 'extend' when _.isFunction fn
+    context[k] = _.bind(fn, context)
 
 # Convenient alias to mongo findOne.
 # 

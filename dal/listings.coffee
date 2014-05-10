@@ -151,11 +151,11 @@ addCount = (hash, hostname, callback) =>
 @toJSON = (docs) ->
   if _.isArray(docs) then (doc for doc in docs) else schema(docs)
 
-# Drops listings older than a month to keep things fresh.
+# Drops listings older than 15 days to keep things fresh.
 # 
 # @param {Function} callback Calls back with (err, numRemoved)
 
-@dropOld = (callback) ->
+@dropOld = (callback) =>
   now = new Date()
   date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 15)
   @collection.remove { dateScraped: { $lte: date } }, callback

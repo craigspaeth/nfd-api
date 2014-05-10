@@ -27,7 +27,9 @@
     "bcrypt": "*",
     "node-mandrill": "*",
     "moment": "*",
-    "morgan": "*"
+    "morgan": "*",
+    "cron": "*",
+    "time": "*"
   },
 	"devDependencies": {
 		"mocha": "*",

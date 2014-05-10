@@ -1,4 +1,4 @@
-{ PORT, SESSION_SECRET, MONGO_URL, NODE_ENV } = require './config'
+{ PORT, SESSION_SECRET, NODE_ENV } = require './config'
 require 'newrelic' if NODE_ENV isnt 'development'
 _ = require 'underscore'
 dal = require './dal'
@@ -6,6 +6,7 @@ fs = require 'fs'
 express = require 'express'
 cors = require 'cors'
 logger = require 'morgan'
+require './lib/cron'
 
 app = module.exports = express()
 
@@ -37,7 +38,7 @@ app.use (err, req, res, next) ->
 # Connect dal to mongo and start server
 return unless module is require.main
 console.log 'starting'
-dal.connect MONGO_URL, (err) ->
+dal.connect (err) ->
   console.log 'started'
   throw err if err
   app.listen PORT, -> console.log 'Listening on ' + PORT
