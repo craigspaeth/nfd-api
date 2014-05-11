@@ -6,7 +6,7 @@ fs = require 'fs'
 express = require 'express'
 cors = require 'cors'
 logger = require 'morgan'
-require './lib/cron'
+require('./lib/cron').start()
 
 app = module.exports = express()
 
