@@ -22,7 +22,6 @@
     "request": "*",
     "cheerio": "*",
     "jsdom": "*",
-    "mixpanel": "*",
     "jade": "*",
     "bcrypt": "*",
     "node-mandrill": "*",

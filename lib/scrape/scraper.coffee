@@ -14,8 +14,6 @@ cheerio = require 'cheerio'
 request = require 'request'
 jsdom = require 'jsdom'
 fs = require 'fs'
-Mixpanel = require 'mixpanel'
-mixpanel = Mixpanel.init MIXPANEL_KEY
 
 inputProxy = (proxyUrl, inputSelector, buttonSelector, url, cb) ->
   Browser.visit proxyUrl, { runScripts: false }, (err, browser) =>
@@ -110,9 +108,6 @@ module.exports = class Scraper
             listings = ({ url: url } for url in urls)
             Listings.upsert listings, (err) =>
               console.log "Saved page #{page} for #{@host}."
-              mixpanel.track 'Scraped page',
-                host: @host
-                page: page
               callback()
     , delay
   
@@ -143,13 +138,6 @@ module.exports = class Scraper
           @samePagesCount++
         if err
           console.log "ERROR: #{err}"
-          mixpanel.track 'Error scraping page',
-            host: @host
-            url: url
-            type: if err.toString().match 'Found no listings'
-                    'no listings'
-                  else
-                    err.toString()
           callback err
         else
           urls = $listings.map((i, el) =>
@@ -171,10 +159,6 @@ module.exports = class Scraper
         @visit @engines['item'], visitUrl, (err, $, window) =>
           err = 'No dollar sign!? ' + @engines?.item unless $?
           if err
-            mixpanel.track 'Error scraping listing',
-              host: @host
-              url: url
-              err: err.toString()
             callback @$ToListing($, window)
           else
             callback null, _.extend @$ToListing($, window), url: url
@@ -206,10 +190,6 @@ module.exports = class Scraper
     Listings.upsert listing, (err, docs) =>
       return callback err if err
       console.log "Saved listing from #{url}.", listing
-      mixpanel.track 'Scraped listing',
-        host: @host
-        url: url
-        doc: listing
       callback()
   
   # No-op that converts a browser window context to a listing object close to our schema.

@@ -1,9 +1,12 @@
 { CronJob } = require 'cron'
-{ exec } = require 'child_process'
+{ spawn } = require 'child_process'
 
-log = (err, stdout, stderr) ->
-  return console.log "FAILED CRON: " + err if err
-  console.log 'SUCCESSFUL CRON: ' + stdout
+spawnJob = (task) ->
+  console.log "CRON #{task.toUpperCase()} SPAWNING..."
+  job = spawn task.split(' ')[0], task.split(' ').slice(1)
+  job.stdout.on 'data', (data) -> console.log "CRON #{task.toUpperCase()} STDOUT: " + data
+  job.stderr.on 'data', (data) -> console.log "CRON #{task.toUpperCase()} STDERR: " + data
+  job.on 'close', (code) -> console.log "CRON #{task.toUpperCase()} EXITED WITH: #{code}"
 
-new CronJob '0 */5 * * *', (-> exec "make scrape", log), null, true, 'America/New_York'
-new CronJob '00 30 11 * * 1-7', (-> exec "make send-alerts", log), null, true, 'America/New_York'
+new CronJob '0 */1 * * *', (-> spawnJob "make scrape"), null, true, 'America/New_York'
+new CronJob '00 30 11 * * 1-7', (-> spawnJob "make send-alerts"), null, true, 'America/New_York'

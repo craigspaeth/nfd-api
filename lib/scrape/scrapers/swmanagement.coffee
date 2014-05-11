@@ -1,3 +1,4 @@
+return
 { parseBeds, parseBaths } = Scraper = require '../scraper'
 accounting = require 'accounting'
 _ = require 'underscore'

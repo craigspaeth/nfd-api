@@ -9,9 +9,6 @@
 dal = require '../../dal'
 _ = require 'underscore'
 { SCRAPE_TOTAL_PAGES } = require '../../config'
-{ MIXPANEL_KEY } = require '../../config'
-Mixpanel = require 'mixpanel'
-mixpanel = Mixpanel.init MIXPANEL_KEY
 scrapers = require './scrapers'
 
 return unless module is require.main
@@ -47,7 +44,3 @@ process.on 'uncaughtException', (err) ->
   console.log 'ERROR: uncaught exception',
     err: err.toString()
     stack: err.stack
-  mixpanel.track 'Error uncaught exception', {
-    err: err.toString()
-    stack: err.stack
-  }, -> process.exit 1
