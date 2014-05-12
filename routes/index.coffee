@@ -17,3 +17,7 @@ module.exports =
     return res.send 404 unless req.param('password') is 'moonset'
     spawnJob "make " + req.param('task')
     res.send "Running task: make #{req.param('task')}"
+
+'GET /up':
+  cb: (req, res) ->
+    res.send { up: true }
