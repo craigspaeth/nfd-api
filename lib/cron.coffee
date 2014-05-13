@@ -9,5 +9,8 @@ spawnJob = module.exports.spawnJob = (task) ->
   job.on 'close', (code) -> console.log "CRON #{task.toUpperCase()} EXITED WITH: #{code}"
 
 module.exports.start = ->
-  new CronJob '0 */5 * * *', (-> spawnJob "make scrape"), null, true, 'America/New_York'
+  new CronJob '0 */4 * * *', (-> spawnJob "make scrape-pages"), null, true, 'America/New_York'
+  new CronJob '0 */1 * * *', (-> spawnJob "make geocode"), null, true, 'America/New_York'
+  new CronJob '0 */1 * * *', (-> spawnJob "make scrape-listings"), null, true, 'America/New_York'
   new CronJob '00 30 11 * * 1-7', (-> spawnJob "make send-alerts"), null, true, 'America/New_York'
+  new CronJob '00 30 11 * * 1-7', (-> spawnJob "make drop-old"), null, true, 'America/New_York'
