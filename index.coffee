@@ -7,12 +7,13 @@ express = require 'express'
 cors = require 'cors'
 logger = require 'morgan'
 require('./lib/cron').start()
+bodyParser = require 'body-parser'
 
 app = module.exports = express()
 
 # Generic express setup
 app.use cors()
-app.use express.bodyParser()
+app.use bodyParser()
 app.use logger()
 
 # Setup views

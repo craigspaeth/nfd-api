@@ -28,7 +28,8 @@
     "moment": "*",
     "morgan": "*",
     "cron": "*",
-    "time": "*"
+    "time": "*",
+    "body-parser": "*"
   },
 	"devDependencies": {
 		"mocha": "*",
