@@ -42,4 +42,5 @@ module.exports =
   """
   cb: (req, res) ->
     Listings.findOne req.params.id, (err, doc) ->
+      return res.send 404, { error: "Listing not found." } unless doc?
       res.send Listings.toJSON doc
