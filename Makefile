@@ -42,6 +42,7 @@ commit:
 	git push git@github.com:craigspaeth/nfd-api.git master
 
 deploy: commit
+	git push git@github.com:craigspaeth/nfd-api.git
 	git push git@heroku.com:nfd-api.git master
 
 .PHONY: test
