@@ -10,7 +10,7 @@ spawnJob = module.exports.spawnJob = (task) ->
 
 module.exports.start = ->
   new CronJob '0 */4 * * *', (-> spawnJob "make scrape-pages"), null, true, 'America/New_York'
-  new CronJob '0 */1 * * *', (-> spawnJob "make geocode"), null, true, 'America/New_York'
-  new CronJob '0 */1 * * *', (-> spawnJob "make scrape-listings"), null, true, 'America/New_York'
+  new CronJob '0 */4 * * *', (-> spawnJob "make geocode"), null, true, 'America/New_York'
+  new CronJob '0 */4 * * *', (-> spawnJob "make scrape-listings"), null, true, 'America/New_York'
   new CronJob '00 30 11 * * 1-7', (-> spawnJob "make send-alerts"), null, true, 'America/New_York'
   new CronJob '00 30 11 * * 1-7', (-> spawnJob "make drop-old"), null, true, 'America/New_York'

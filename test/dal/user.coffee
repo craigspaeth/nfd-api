@@ -20,12 +20,12 @@ describe 'users', ->
 
     it 'validates email', (done) ->
       Users.insert { email: 'craigspaeth', password: 'footothebar' }, (err) ->
-        err.toString().should.include 'Invalid email'
+        err.toString().should.containEql 'Invalid email'
         done()
 
     it 'validates short passwords', (done) ->
       Users.insert { email: 'craigspaeth@gmail.com', password: 'foo' }, (err) ->
-        err.toString().should.include 'Password too short'
+        err.toString().should.containEql 'Password too short'
         done()
 
     it 'hashes the password', ->
@@ -35,6 +35,6 @@ describe 'users', ->
     it 'throws user already exists if the same email', (done) ->
       Users.collection.findOne.callsArgWith 1, null, {}
       Users.insert { email: 'craigspaeth@gmail.com', password: 'footothebar' }, (err) ->
-        err.toString().should.include 'already'
+        err.toString().should.containEql 'already'
         done()
       Users.collection.findOne.args[0][0].email.should.equal 'craigspaeth@gmail.com'

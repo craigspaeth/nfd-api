@@ -6,7 +6,7 @@ fs = require 'fs'
 express = require 'express'
 cors = require 'cors'
 logger = require 'morgan'
-require('./lib/cron').start()
+require('./lib/cron').start() if NODE_ENV isnt 'development'
 bodyParser = require 'body-parser'
 
 app = module.exports = express()

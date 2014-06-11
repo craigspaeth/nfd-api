@@ -80,7 +80,7 @@ describe 'listings', ->
     it 'stores dateGeocoded', (done) ->
       listings.gm = { geocode: sinon.stub() }
       listings.geocode { location: { name: 'foobar' } }, (err, listing) ->
-        listing.dateGeocoded.toString().should.include new Date().getFullYear()
+        listing.dateGeocoded.toString().should.containEql new Date().getFullYear()
         done()
       listings.gm.geocode.args[0][0].should.equal 'foobar'
       listings.gm.geocode.args[0][1] null,
@@ -90,7 +90,7 @@ describe 'listings', ->
               short_name: "East Harlem"
               types: ["neighborhood", "political"]
             ]
-            formattedAddress: "245 East 124th Street, New York, NY 10035, USA"
+            formatted_address: "245 East 124th Street, New York, NY 10035, USA"
             geometry:
               location:
                 lat: 40.802391
@@ -115,7 +115,7 @@ describe 'listings', ->
               short_name: "East Harlem"
               types: ["neighborhood", "political"]
             ]
-            formattedAddress: "245 East 124th Street, New York, NY 10035, USA"
+            formatted_address: "245 East 124th Street, New York, NY 10035, USA"
             geometry:
               location:
                 lat: 40.802391
@@ -138,7 +138,7 @@ describe 'listings', ->
         results: [
             {
               address_components: []
-              formattedAddress: "245 East 124th Street, Cincinnati OH"
+              formatted_address: "245 East 124th Street, Cincinnati OH"
             }
             {
               address_components: [
@@ -146,7 +146,7 @@ describe 'listings', ->
                 short_name: "East Harlem"
                 types: ["neighborhood", "political"]
               ]
-              formattedAddress: "Kewl York, New York, NY"
+              formatted_address: "Kewl York, New York, NY"
               geometry:
                 location:
                   lat: 40.802391
@@ -154,7 +154,7 @@ describe 'listings', ->
             }
             {
               address_components: []
-              formattedAddress: "245 East 124th Street, Cincinnati OH"
+              formatted_address: "245 East 124th Street, Cincinnati OH"
             }
           ]
         
