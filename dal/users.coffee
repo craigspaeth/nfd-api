@@ -127,7 +127,7 @@ validate = (doc) ->
       for alert in user.alerts
         sendAlertMail alert, user, callback
 
-getAlertHTML = @getAlertHTML = (alert, callback) =>
+getAlertHTML = @getAlertHTML = (alert, user, callback) =>
   Listings.find _.extend(alert.query, { sort: 'newest', size: 20 }), (err, listings) ->
     if err
       console.warn err
@@ -139,12 +139,13 @@ getAlertHTML = @getAlertHTML = (alert, callback) =>
       APP_URL: APP_URL
       CLIENT_URL: CLIENT_URL
       day: moment().format('dddd')
+      user: user
     )
     callback null, html
 
 sendAlertMail = (alert, user, callback) ->
   console.log "Sending to #{user.name}..."
-  getAlertHTML alert, (err, html) ->
+  getAlertHTML alert, user, (err, html) ->
     return callback err if err
     mandrill '/messages/send',
       message:

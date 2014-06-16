@@ -105,6 +105,6 @@ module.exports =
   cb: (req, res, next) ->
     findOne req.params.id, (err, user) ->
       return next err if err
-      getAlertHTML user.alerts[req.params.index], (err, html) ->
+      getAlertHTML user.alerts[req.params.index], user, (err, html) ->
         return next err if err
         res.send html

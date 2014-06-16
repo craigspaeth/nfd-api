@@ -4,7 +4,8 @@
 - columnWidth = "155px"
 - headingStyle = "font-family: Georgia; font-size: 24px; padding: " + gutterWidth + " 0; border-top: 1px solid " + grayColor + "; font-weight: normal; color: #344b4b; margin: 0"
 - totalWidth = "680px"
-
+- twoColumnWidth = "330px"
+- threeColumnWidth = "525px"
 mixin tbtr()
   table( style="width: #{totalWidth}" cellpadding="0" cellspacing="0" border="0" )
     tbody
@@ -21,8 +22,8 @@ table( cellpadding="0" cellspacing="0" border="0" style=[
   ].join(';'))
   tbody
     tr
-      td( style="padding-right: #{gutterWidth}; width: 525px" ) #{day}'s new listings for&nbsp;
-        strong= alert.name
+      td( style="padding-right: #{gutterWidth}; width: #{threeColumnWidth}" ) #{day}'s new listings for&nbsp;
+        em= alert.name
       td
         img( src="#{APP_URL}/email-images/logo.png" style="width: #{columnWidth}")
 for listing in listings
@@ -45,3 +46,15 @@ for listing in listings
       td( style="padding-bottom: #{gutterWidth}" )
         a( href="#{CLIENT_URL}/listings/#{listing._id}" )
           img( src="#{APP_URL}/email-images/see-more.png" alt="See More" )
++tbtr
+  td( style="padding-top: 20px; border-top: 1px solid #{grayColor}" )
+  +tbtr
+    td( style="width: #{twoColumnWidth}; font-size: 13px; vertical-align: top; padding-right: #{gutterWidth}; padding-top: 2px" ) You are receiving the message because #{user.email} is a member of NoFeeDigs. If you would like to stop receiving these emails please feel free to&nbsp;
+      a( href="#{CLIENT_URL}/settings?accessToken=#{user.accessToken}" style="color: #{greenColor}; text-decoration: underline" ) Unsubscribe
+      | .
+    td( style="width: #{columnWidth}; font-size: 13px; vertical-align: top; padding-right: #{gutterWidth}" )
+      a( style="color: #{greenColor}; text-decoration: none" href="" ) Follow us on Facebook
+        img( src="#{APP_URL}/email-images/facebook.png" style="padding-left: 5px; vertical-align: middle"  )
+    td( style="width: #{columnWidth}; font-size: 13px; vertical-align: top" )
+      a( style="color: #{greenColor}; text-decoration: none" href="https://twitter.com/nofeedigs" ) Follow us on Twitter
+        img( src="#{APP_URL}/email-images/twitter.png" style="padding-left: 16px; vertical-align: middle" )
