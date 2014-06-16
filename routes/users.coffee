@@ -1,4 +1,5 @@
-{ insert, toJSON, update, findOne, resetPassword, createAccessToken } = require '../dal/users'
+{ insert, toJSON, update, findOne, resetPassword, createAccessToken,
+  getAlertHTML } = require '../dal/users'
 async = require 'async'
 ClientApplications = require '../dal/client-applications'
 auth = require '../lib/middleware/auth'
@@ -26,9 +27,10 @@ module.exports =
   Updates a user.
   
   Params:
+  *id*: User's id
   *email*: User's email address when signing up through email.
   *password*: User's password when signing up through email.
-  *alerts*: An array of { query: Object, name: String } hashes storing alerts for the user.
+  *alerts*: An array of { query: Object, name: String } hashes storing alerts for User.
   """
   cb: [
     auth.accessToken
@@ -44,6 +46,7 @@ module.exports =
   Returns a user.
   
   Params:
+  *id*: User's id.
   *accessToken*: Access token.
   """
   cb: [
@@ -81,7 +84,7 @@ module.exports =
 
 'POST /users/reset-password':
   desc: """
-  Sets a temporary accessToken on the user and emails them a reset link.
+  Sets a temporary accessToken on User and emails them a reset link.
   
   Params:
   *email*: User's email address.
@@ -90,3 +93,18 @@ module.exports =
     resetPassword req.param('email'), (err, resp) ->
       return next err if err
       res.send resp
+
+'GET /users/:id/alerts/:index/email':
+  desc: """
+  Shows the email template for a user's alerts.
+
+  Params:
+  *id*: User's id.
+  *index*: The index of the user's alerts. e.g. 0 is the first alert for the user.
+  """
+  cb: (req, res, next) ->
+    findOne req.params.id, (err, user) ->
+      return next err if err
+      getAlertHTML user.alerts[req.params.index], (err, html) ->
+        return next err if err
+        res.send html

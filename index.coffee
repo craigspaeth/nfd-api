@@ -32,6 +32,9 @@ for router in routers
     else
       app[method] routeName, hash.cb
 
+# Static middleware
+app.use express.static __dirname + "/public"
+
 # Error handler
 app.use (err, req, res, next) ->
   res.send 500, { error: err.message }

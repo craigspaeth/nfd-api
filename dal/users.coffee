@@ -15,13 +15,16 @@
 #   ]
 # }
 
-{ BCRYPT_SALT_LENGTH, MANDRILL_APIKEY, CLIENT_URL } = require '../config'
+{ BCRYPT_SALT_LENGTH, MANDRILL_APIKEY, CLIENT_URL, APP_URL } = require '../config'
 _ = require 'underscore'
 _.mixin require 'underscore'
 crypto = require 'crypto'
 bcrypt = require 'bcrypt'
 mandrill = require('node-mandrill')(MANDRILL_APIKEY)
 moment = require 'moment'
+jade = require 'jade'
+fs = require 'fs'
+{ resolve } = require 'path'
 { ObjectID } = mongodb = require 'mongodb'
 { isEmail } = require 'validator'
 { parse } = require 'url'
@@ -124,28 +127,25 @@ validate = (doc) ->
       for alert in user.alerts
         sendAlertMail alert, user, callback
 
-sendAlertMail = (alert, user, callback) ->
-  console.log "Sending to #{user.name}..."
+getAlertHTML = @getAlertHTML = (alert, callback) =>
   Listings.find _.extend(alert.query, { sort: 'newest', size: 20 }), (err, listings) ->
     if err
       console.warn err
-      return callback err        
-    body = """
-      Your latest no fee listings:
-      
-    """
-    body += (for listing in listings
-      """
-      $#{_.numberFormat listing.rent} #{if listing.beds then listing.beds + ' bedroom' else 'Studio'} at #{listing.location.formatted_address or listing.location.formattedAddress or listing.location.name}.
-      See more: #{listing.url}
+      return callback err
+    filename = resolve __dirname, '../views/alert.jade'
+    html = jade.compile(fs.readFileSync(filename), { filename: filename })(
+      alert: alert
+      listings: listings
+      APP_URL: APP_URL
+      CLIENT_URL: CLIENT_URL
+      day: moment().format('dddd')
+    )
+    callback null, html
 
-
-      """
-    ).join ''
-    body += """
-      -----
-      Prettier & more useful emails coming soon! Reply to unsubscribe.
-    """
+sendAlertMail = (alert, user, callback) ->
+  console.log "Sending to #{user.name}..."
+  getAlertHTML alert, (err, html) ->
+    return callback err if err
     mandrill '/messages/send',
       message:
         to: [{ email: user.email }]
@@ -154,7 +154,7 @@ sendAlertMail = (alert, user, callback) ->
                  if (b = alert.query['bed-min']) is 0 then 'Studio' \
                  else b + ' bedroom' + (if b > 1 then 's' else '') +
                  ' , or bigger, apartments.'
-        text: body
+        text: html
     , (err, resp) ->
       if err
         console.warn err

@@ -1,0 +1,47 @@
+- greenColor = "#3DB06F"
+- grayColor = "#CCC"
+- gutterWidth = "20px"
+- columnWidth = "155px"
+- headingStyle = "font-family: Georgia; font-size: 24px; padding: " + gutterWidth + " 0; border-top: 1px solid " + grayColor + "; font-weight: normal; color: #344b4b; margin: 0"
+- totalWidth = "680px"
+
+mixin tbtr()
+  table( style="width: #{totalWidth}" cellpadding="0" cellspacing="0" border="0" )
+    tbody
+      tr
+        block
+
+table( cellpadding="0" cellspacing="0" border="0" style=[
+  "border-top: 1px solid #{grayColor}",
+  "padding: #{gutterWidth} 0",
+  "font-family: Georgia, serif",
+  "color: #{greenColor}",
+  "font-size: 24px",
+  "width: #{totalWidth}"
+  ].join(';'))
+  tbody
+    tr
+      td( style="padding-right: #{gutterWidth}; width: 525px" ) #{day}'s new listings for&nbsp;
+        strong= alert.name
+      td
+        img( src="#{APP_URL}/email-images/logo.png" style="width: #{columnWidth}")
+for listing in listings
+  if listing.pictures.length > 2 && listing.location.formattedAddress
+    h1 Hi
+  else if listing.pictures.length > 4
+    +tbtr
+      td
+        h1( style=headingStyle )
+          strong= listing.location.name
+          br
+          | #{listing.rent} #{listing.beds} bedroom #{listing.baths} bathroom
+    +tbtr
+      for i in [0,1,2,3]
+        - numPerColumn = i < 2 ? Math.ceil(listing.pictures.length / 4) : Math.floor(listing.pictures.length / 4)
+        td( style="width: #{columnWidth}; vertical-align: top;" + (i != 3 ? "padding: 0 #{gutterWidth} 0 0" : "padding: 0") )
+          for url in listing.pictures.slice(i * numPerColumn, (i + 1) * numPerColumn)
+            img( src=url style="width: #{columnWidth}; margin-bottom: #{gutterWidth}" )
+    +tbtr
+      td( style="padding-bottom: #{gutterWidth}" )
+        a( href="#{CLIENT_URL}/listings/#{listing._id}" )
+          img( src="#{APP_URL}/email-images/see-more.png" alt="See More" )
