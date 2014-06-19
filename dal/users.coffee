@@ -24,6 +24,8 @@ mandrill = require('node-mandrill')(MANDRILL_APIKEY)
 moment = require 'moment'
 jade = require 'jade'
 fs = require 'fs'
+accounting = require 'accounting'
+console.log _.keys accounting
 { resolve } = require 'path'
 { ObjectID } = mongodb = require 'mongodb'
 { isEmail } = require 'validator'
@@ -140,6 +142,7 @@ getAlertHTML = @getAlertHTML = (alert, user, callback) =>
       CLIENT_URL: CLIENT_URL
       day: moment().format('dddd')
       user: user
+      accounting: accounting
     )
     callback null, html
 

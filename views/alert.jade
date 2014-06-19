@@ -6,11 +6,16 @@
 - totalWidth = "680px"
 - twoColumnWidth = "330px"
 - threeColumnWidth = "525px"
+
 mixin tbtr()
   table( style="width: #{totalWidth}" cellpadding="0" cellspacing="0" border="0" )
     tbody
       tr
         block
+
+mixin map(listing, width, height)
+  img( src="http://maps.googleapis.com/maps/api/staticmap?center=#{listing.location.formattedAddress}&zoom=13&size=#{width}x#{height}&markers=color:red%7C%7C#{listing.location.lat},#{listing.location.lng}"
+       style="margin-bottom: #{gutterWidth}" )
 
 table( cellpadding="0" cellspacing="0" border="0" style=[
   "border-top: 1px solid #{grayColor}",
@@ -22,30 +27,52 @@ table( cellpadding="0" cellspacing="0" border="0" style=[
   ].join(';'))
   tbody
     tr
-      td( style="padding-right: #{gutterWidth}; width: #{threeColumnWidth}" ) #{day}'s new listings for&nbsp;
+      td( style="padding-right: #{gutterWidth}; width: #{threeColumnWidth}; font-family: Georgia, serif" ) #{day}'s new listings for&nbsp;
         em= alert.name
       td
         img( src="#{APP_URL}/email-images/logo.png" style="width: #{columnWidth}")
 for listing in listings
-  if listing.pictures.length > 2 && listing.location.formattedAddress
-    h1 Hi
-  else if listing.pictures.length > 4
-    +tbtr
+  +tbtr
       td
         h1( style=headingStyle )
-          strong= listing.location.name
-          br
-          | #{listing.rent} #{listing.beds} bedroom #{listing.baths} bathroom
+          if listing.location.neighborhood
+            strong= listing.location.neighborhood
+            |  &mdash;
+          else if listing.location.name
+            strong= listing.location.name
+            br
+          | #{accounting.formatMoney(listing.rent, '$', 0)} #{listing.beds} bedroom #{listing.baths} bathroom
+  if listing.pictures.length && listing.dateGeocoded
+    //- Geocoded & pictures
+    +tbtr
+      - firstHalf = Math.ceil(listing.pictures.length / 2)
+      - lastHalf = firstHalf + Math.floor(listing.pictures.length / 2)
+      td( style="width: #{columnWidth}; vertical-align: top; padding-right: #{gutterWidth}" )
+        for url in listing.pictures.slice(0, firstHalf)
+          img( src=url style="width: #{columnWidth}; padding-bottom: #{gutterWidth}" )
+      td( style="width: #{columnWidth}; vertical-align: top; padding-right: #{gutterWidth}" )
+        for url in listing.pictures.slice(firstHalf, lastHalf)
+          img( src=url style="width: #{columnWidth}; padding-bottom: #{gutterWidth}" )
+      td( style="width: #{twoColumnWidth}; vertical-align: top" colspan=2 )
+        +map(listing, 330, 330)
+  else if !listings.dateGeocoded && listing.pictures.length
+    //- Not geocoded, pictures
     +tbtr
       for i in [0,1,2,3]
         - numPerColumn = i < 2 ? Math.ceil(listing.pictures.length / 4) : Math.floor(listing.pictures.length / 4)
         td( style="width: #{columnWidth}; vertical-align: top;" + (i != 3 ? "padding: 0 #{gutterWidth} 0 0" : "padding: 0") )
           for url in listing.pictures.slice(i * numPerColumn, (i + 1) * numPerColumn)
-            img( src=url style="width: #{columnWidth}; margin-bottom: #{gutterWidth}" )
+            img( src=url style="width: #{columnWidth}; padding-bottom: #{gutterWidth}" )
+  else
+    //- Not geocoded, no pictures
     +tbtr
-      td( style="padding-bottom: #{gutterWidth}" )
-        a( href="#{CLIENT_URL}/listings/#{listing._id}" )
-          img( src="#{APP_URL}/email-images/see-more.png" alt="See More" )
+      td( style="background: #eee; color: #bbb; font-family: Georgia, serif; letter-spacing: 2px; padding: 100px 0; text-align: center; font-size: 12px; border-bottom: #{gutterWidth} solid white" )
+        | NO PICTURES
+  +tbtr
+    td( style="padding-bottom: #{gutterWidth}" )
+      a( href="#{CLIENT_URL}/listings/#{listing._id}" )
+        img( src="#{APP_URL}/email-images/see-more.png" alt="See More" )
+
 +tbtr
   td( style="padding-top: 20px; border-top: 1px solid #{grayColor}" )
   +tbtr
