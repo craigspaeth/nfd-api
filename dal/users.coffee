@@ -25,7 +25,6 @@ moment = require 'moment'
 jade = require 'jade'
 fs = require 'fs'
 accounting = require 'accounting'
-console.log _.keys accounting
 { resolve } = require 'path'
 { ObjectID } = mongodb = require 'mongodb'
 { isEmail } = require 'validator'
@@ -158,7 +157,7 @@ sendAlertMail = (alert, user, callback) ->
                  if (b = alert.query['bed-min']) is 0 then 'Studio' \
                  else b + ' bedroom' + (if b > 1 then 's' else '') +
                  ' , or bigger, apartments.'
-        text: html
+        html: html
     , (err, resp) ->
       if err
         console.warn err
