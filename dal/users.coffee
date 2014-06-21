@@ -92,7 +92,7 @@ Base.extend this
     delete alert.query.neighborhoods if alert.query.neighborhoods?.length is 0
     user.alerts[i] =
       name: alert.name
-      query: _.pick(alert.query, 'neighborhoods', 'bed-min', 'bath-min')
+      query: _.pick(alert.query, 'neighborhoods', 'bed-min', 'bath-min', 'rent-max')
   return cb null, user unless user.password?
   bcrypt.hash data.password, BCRYPT_SALT_LENGTH, (err, hash) ->
     return cb err if err
