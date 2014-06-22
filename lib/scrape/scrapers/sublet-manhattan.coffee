@@ -23,8 +23,8 @@ opts =
              null
     {
       rent: rent
-      beds: parseBeds $('title').text()
-      baths: parseBaths $('title').text()
+      beds: parseBeds $(".details.font10 tr").first().text()
+      baths: parseBaths $(".details.font10 tr").first().text()
       location:
         name: _.clean $('h1 b').text()
       pictures: $('#myGallery img').map(-> $(@).attr 'src').toArray()

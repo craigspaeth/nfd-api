@@ -1,17 +1,17 @@
-Scraper = require '../scraper'
+{ parseBeds, parseBaths } = Scraper = require '../scraper'
 accounting = require 'accounting'
+_ = require 'underscore'
+_.mixin require('underscore.string').exports()
 
 module.exports = new Scraper
   engines: { list: 'request', item: 'request' }
   listUrl: (page) -> 
-    "http://streeteasy.com/nyc/rentals/nyc/rental_type:frbo,brokernofee?" + 
-    "page=#{page}&sort_by=listed_desc&lnf=old"
-  listItemSelector: '.unsponsored .item.listing .body h3 a'
-  editListingUrl: (url) -> url + '?lnf=old'
+    "http://streeteasy.com/no-fee-rentals/nyc"
+  listItemSelector: '.details_title a'
   $ToListing: ($) ->
-    rent: accounting.unformat $('h1 .price').text()
-    beds: Scraper.parseBeds $('.data').text()
-    baths: parseFloat($('.data').text().match(/[\.\d]* bath/)) or null
+    rent: accounting.unformat _.trim $('.price').first().text().replace('for rent', '')
+    beds: parseBeds $('.details_info').first().text()
+    baths: parseBaths $('.details_info').first().text()
     location: 
-      name: $('h1 span').text()
-    pictures: $('.photo.medium > a').map(-> $(@).attr 'href').toArray()
+      name: _.trim $('h1').text()
+    pictures: $('#gallery_images img').map(-> $(@).attr 'src').toArray()
