@@ -10,7 +10,7 @@ module.exports = new Scraper
   listItemSelector: '.property-title a'
   $ToListing: ($) ->
     rent: accounting.unformat $('#listing-overview > div:first-child').text()
-    beds: Scraper.parseBeds $('#listing-overview').text()
+    beds: parseBeds $('#listing-overview').text()
     baths: parseFloat($('#listing-overview').text().match(/[\.\d]* bath/i)) or null
     location: 
       name: _.clean($('.address-block').text())
