@@ -25,8 +25,8 @@ _ = require 'underscore'
 
 @update = (query, attrs, callback) ->
   update = =>
-    console.log 'moo', attrs, 'moo'
-    @collection.findAndModify idQuery(query), [], { $set: attrs }, {}, callback
+    @collection.findAndModify idQuery(query), [], { $set: attrs }, {}, =>
+      @findOne query, callback
   if @sanitize?
     @sanitize attrs, (err, a) ->
       attrs = a

@@ -52,7 +52,7 @@ module.exports =
   cb: [
     auth.accessToken
     (req, res, next) ->
-      findOne req.params.id, (err, user) ->
+      findOne req.param('id'), (err, user) ->
         res.send toJSON user
   ]
 
