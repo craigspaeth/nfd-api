@@ -61,6 +61,7 @@ GOOD_PARAMS = @GOOD_PARAMS =
 
 @find = (params, callback) =>
   pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
+  console.log @buildQuery params
   cursor = @collection.find(@buildQuery params)
   cursor.sort(rent: 1) if params.sort is 'rent'
   cursor.sort(beds: -1, baths: -1) if params.sort is 'size'

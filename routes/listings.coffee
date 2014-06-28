@@ -27,13 +27,13 @@ module.exports =
   *size*: Limits the ammount of results per page. Default: 50
   *page*: Page of results to fetch.
   """
-  cb: (req, res) ->
+  cb: (req, res, next) ->
     async.parallel {
       total: (cb) -> Listings.collection.count(cb)
       count: (cb) -> Listings.count(req.query, cb)
       results: (cb) -> Listings.find(req.query, cb)
     }, (err, results) ->
-      return res.send 500 if err
+      next err if err
       res.send results
       
 'GET /listings/:id':
