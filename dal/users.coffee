@@ -87,12 +87,12 @@ Base.extend this
 @sanitize = (data, cb) ->
   user = _.pick(data, 'email', 'password', 'twitterData', 'facebookData', 
                       'name', 'alerts', 'accessToken')
-  user.alerts ?= []
-  for alert, i in user.alerts
-    delete alert.query.neighborhoods if alert.query.neighborhoods?.length is 0
-    user.alerts[i] =
-      name: alert.name
-      query: _.pick(alert.query, 'neighborhoods', 'bed-min', 'bath-min', 'rent-max')
+  if _.isArray data.alerts
+    for alert, i in user.alerts
+      delete alert.query.neighborhoods if alert.query.neighborhoods?.length is 0
+      user.alerts[i] =
+        name: alert.name
+        query: _.pick(alert.query, 'neighborhoods', 'bed-min', 'bath-min', 'rent-max')
   return cb null, user unless user.password?
   bcrypt.hash data.password, BCRYPT_SALT_LENGTH, (err, hash) ->
     return cb err if err

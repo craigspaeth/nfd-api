@@ -38,3 +38,10 @@ describe 'users', ->
         err.toString().should.containEql 'already'
         done()
       Users.collection.findOne.args[0][0].email.should.equal 'craigspaeth@gmail.com'
+
+  describe '#sanitize', ->
+
+    it 'does not set an empty alerts array if not passed', (done) ->
+      Users.sanitize { accessToken: 'foo' }, (err, data) ->
+        (data.alerts?).should.not.be.ok
+        done()
