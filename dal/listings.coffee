@@ -61,7 +61,6 @@ GOOD_PARAMS = @GOOD_PARAMS =
 
 @find = (params, callback) =>
   pageSize = parseInt(params.size) or DEFAULT_PAGE_SIZE
-  console.log @buildQuery params
   cursor = @collection.find(@buildQuery params)
   cursor.sort(rent: 1) if params.sort is 'rent'
   cursor.sort(beds: -1, baths: -1) if params.sort is 'size'
@@ -88,6 +87,7 @@ GOOD_PARAMS = @GOOD_PARAMS =
   query.beds = { $gte: parseInt params['bed-min'] } if params['bed-min']?
   query.baths = { $gte: parseInt params['bath-min'] } if params['bath-min']?
   query.rent = { $lte: parseInt params['rent-max'] } if params['rent-max']?
+  query.dateScraped = { $gte: new Date(params['date-scraped-start']) } if params['date-scraped-start']?
   query['location.neighborhood'] = { $in: params.neighborhoods } if params.neighborhoods?
   query[key] = _.extend(query[key] ? {}, val) for key, val of GOOD_PARAMS
   query

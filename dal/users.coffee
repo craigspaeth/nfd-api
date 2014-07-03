@@ -129,7 +129,10 @@ validate = (doc) ->
         sendAlertMail alert, user, callback
 
 getAlertHTML = @getAlertHTML = (alert, user, callback) =>
-  Listings.find _.extend(alert.query, { sort: 'newest', size: 20 }), (err, listings) ->
+  Listings.find _.extend(alert.query, {
+    'date-scraped-start': moment().subtract('days', 1).toDate()
+    size: 20
+  }), (err, listings) ->
     if err
       console.warn err
       return callback err
