@@ -155,11 +155,8 @@ sendAlertMail = (alert, user, callback) ->
     mandrill '/messages/send',
       message:
         to: [{ email: user.email }]
-        from_email: 'nofeedigs@gmail.com'
-        subject: "#{moment().format('dddd')}'s new " +
-                 if (b = alert.query['bed-min']) is 0 then 'Studio' \
-                 else b + ' bedroom' + (if b > 1 then 's' else '') +
-                 ' , or bigger, apartments.'
+        from_email: 'NoFeeDigs <nofeedigs@gmail.com>'
+        subject: "#{moment().format('dddd')}'s new listings for " + alert.name
         html: html
     , (err, resp) ->
       if err

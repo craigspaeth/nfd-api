@@ -14,7 +14,7 @@ mixin tbtr()
         block
 
 mixin map(listing, width, height)
-  img( src="http://maps.googleapis.com/maps/api/staticmap?center=#{listing.location.formattedAddress}&zoom=13&size=#{width}x#{height}&markers=color:red%7C%7C#{listing.location.lat},#{listing.location.lng}"
+  img( src="http://maps.googleapis.com/maps/api/staticmap?center=#{listing.location.formattedAddress}&zoom=14&size=#{width}x#{height}&markers=color:red%7C%7C#{listing.location.lat},#{listing.location.lng}"
        style="margin-bottom: #{gutterWidth}" )
 
 table( cellpadding="0" cellspacing="0" border="0" style=[
@@ -80,7 +80,7 @@ for listing in listings
     td( style="width: #{twoColumnWidth}; font-size: 13px; vertical-align: top; padding-right: #{gutterWidth}; padding-top: 2px; font-family: Georgia, serif" ) You are receiving the message because #{user.email} is a member of NoFeeDigs.
       br
       | If you would like to stop receiving these emails please feel free to&nbsp;
-      a( href="#{CLIENT_URL}/settings?accessToken=#{user.accessToken}" style="color: #{greenColor}; text-decoration: underline" ) Unsubscribe
+      a( href="#{CLIENT_URL}/settings?access-token=#{user.accessToken}&_id=#{user._id}" style="color: #{greenColor}; text-decoration: underline" ) Unsubscribe
       | .
     td( style="width: #{columnWidth}; font-size: 13px; vertical-align: top; padding-right: #{gutterWidth}" )
       a( style="color: #{greenColor}; text-decoration: none; font-size: 12px; font-family: Georgia, serif" href="" ) Follow us on Facebook
