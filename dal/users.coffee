@@ -154,8 +154,9 @@ sendAlertMail = (alert, user, callback) ->
     return callback err if err
     mandrill '/messages/send',
       message:
-        to: [{ email: user.email }]
-        from_email: 'NoFeeDigs <nofeedigs@gmail.com>'
+        to: [{ email: user.email, name: user.name }]
+        from_name: 'NoFeeDigs'
+        from_email: 'nofeedigs@gmail.com'
         subject: "#{moment().format('dddd')}'s new listings for " + alert.name
         html: html
     , (err, resp) ->
