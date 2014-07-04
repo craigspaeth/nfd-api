@@ -34,7 +34,7 @@ Array::toArray = -> @
 module.exports = class Scraper
   
   constructor: (attrs) ->
-    @[key] = val for key, val of attrs
+    _.extend @, attrs
     @requestsPerMinute = SCRAPE_PER_MINUTE
     @samePagesCount = 0
     @scrapePageTimeouts = []
@@ -132,19 +132,20 @@ module.exports = class Scraper
     console.log "Fetching page #{page} from #{@listUrl(page)}..."
     @proxiedUrl @listUrl(page), (url) =>
       @visit @engines['list'], url, (err, $) =>
-        $listings = $(@listItemSelector)
-        if $listings.length is 0
-          err = "Found no listings at #{url}"
-          @samePagesCount++
-        if err
-          console.log "ERROR: #{err}"
-          callback err
-        else
-          urls = $listings.map((i, el) =>
-            href = $(el).attr('href') or el.attribs?.href
-            @editListingUrl resolve "http://" + @host, href
-          ).toArray()
-          callback null, urls
+        return callback err if err
+        res = @$toListingUrls($)
+        if _.isArray(res) then callback(null, res) else callback(res)
+
+  $toListingUrls: ($) =>
+    if ($listings = $ @listItemSelector).length is 0
+      console.log "ERROR: #{err}"
+      @samePagesCount++
+      new Error "Found no listings at #{url}"
+    else
+      urls = $listings.map((i, el) =>
+        href = $(el).attr('href') or el.attribs?.href
+        @editListingUrl resolve "http://" + @host, href
+      ).toArray()
   
   # Scrapes an individual listing and converts it to our data model.
   # 
