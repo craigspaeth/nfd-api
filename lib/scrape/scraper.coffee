@@ -135,10 +135,10 @@ module.exports = class Scraper
         if err
           console.log "ERROR: #{err}"
           return callback err
-        res = @$toListingUrls($)
+        res = @$toListingUrls($, url)
         if _.isArray(res) then callback(null, res) else callback(res)
 
-  $toListingUrls: ($) =>
+  $toListingUrls: ($, url) =>
     if ($listings = $ @listItemSelector).length is 0
       @samePagesCount++
       new Error "Found no listings at #{url}"
