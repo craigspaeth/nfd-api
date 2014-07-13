@@ -29,13 +29,13 @@
     "morgan": "*",
     "cron": "*",
     "time": "*",
-    "body-parser": "*"
+    "body-parser": "*",
+    "superagent": "*"
   },
 	"devDependencies": {
 		"mocha": "*",
 		"should": "*",
 		"sinon": "*",
-    "rewire": "*",
-    "superagent": "*"
+    "rewire": "*"
 	}
 }

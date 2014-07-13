@@ -132,13 +132,14 @@ module.exports = class Scraper
     console.log "Fetching page #{page} from #{@listUrl(page)}..."
     @proxiedUrl @listUrl(page), (url) =>
       @visit @engines['list'], url, (err, $) =>
-        return callback err if err
-        res = @$toListingUrls($)
+        if err
+          console.log "ERROR: #{err}"
+          return callback err
+        res = @$toListingUrls($, url)
         if _.isArray(res) then callback(null, res) else callback(res)
 
-  $toListingUrls: ($) =>
+  $toListingUrls: ($, url) =>
     if ($listings = $ @listItemSelector).length is 0
-      console.log "ERROR: #{err}"
       @samePagesCount++
       new Error "Found no listings at #{url}"
     else
