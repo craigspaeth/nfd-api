@@ -8,11 +8,11 @@ module.exports =
   SCRAPE_PER_MINUTE:     10
   SCRAPE_TOTAL_PAGES:    10
   VISIT_TIMEOUT:         60000
-  NEW_RELIC_LICENSE_KEY: 'f0e0492c32bfe5cd828a0fcc0ab68ca56bc1d8b7'
-  MIXPANEL_KEY:          '43b61ce4f9ba26bc8e87d44568af0622'
+  NEW_RELIC_LICENSE_KEY: ''
+  MIXPANEL_KEY:          ''
   BCRYPT_SALT_LENGTH:    10
   SESSION_SECRET:        'n0feedigz'
-  MANDRILL_APIKEY:       'JWs93jj-BCaL_KFGIDMEww'
+  MANDRILL_APIKEY:       ''
 
 # Override any values with env variables if they exist
 module.exports[key] = (process.env[key] or val) for key, val of module.exports
